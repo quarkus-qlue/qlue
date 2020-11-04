@@ -27,12 +27,11 @@ import java.util.regex.Pattern;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class Chain {
-    private static final String GRAPH_OUTPUT = System.getProperty(Chain.class.getPackageName() + ".graph-output");
+    private static final String GRAPH_OUTPUT = System.getProperty("io.quarkus.qlue.graph-output");
 
     private final Set<ItemId> initialIds;
     private final int initialSingleCount;
     private final int initialMultiCount;
-    private final Set<ItemId> finalIds;
     private final List<StepInfo> startSteps;
     private final Set<ItemId> consumed;
     private final int endStepCount;
@@ -165,7 +164,6 @@ public final class Chain {
         this.initialIds = initialIds;
         this.initialSingleCount = initialSingleCount;
         this.initialMultiCount = initialMultiCount;
-        this.finalIds = finalIds;
         this.startSteps = new ArrayList<>(startSteps);
         this.consumed = consumed;
         this.endStepCount = endSteps.size();
@@ -207,10 +205,6 @@ public final class Chain {
 
     Set<ItemId> getConsumed() {
         return consumed;
-    }
-
-    Set<ItemId> getFinalIds() {
-        return finalIds;
     }
 
     ClassLoader getClassLoader() {

@@ -16,7 +16,7 @@
 
     <properties>
         <version.io.smallrye.common>1.4.1</version.io.smallrye.common>
-        <jdk.target>11</jdk.target>
+        <jdk.target>8</jdk.target>
     </properties>
 
     <build>
@@ -36,7 +36,6 @@
                     <execution>
                         <id>default-compile</id>
                         <configuration>
-                            <release>${jdk.target}</release>
                             <source>${jdk.target}</source>
                             <target>${jdk.target}</target>
                         </configuration>

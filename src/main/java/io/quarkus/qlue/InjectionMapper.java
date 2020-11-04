@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
 import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.BiConsumer;
@@ -400,9 +401,9 @@ public interface InjectionMapper {
                 } else if (MultiClassItem.class.isAssignableFrom(realType)) {
                     return sc -> sc.consumeMulti((Class) realType, (Class) classArg);
                 } else if (SimpleItem.class.isAssignableFrom(realType)) {
-                    return sc -> List.of(sc.consume((Class) realType));
+                    return sc -> Collections.singletonList(sc.consume((Class) realType));
                 } else if (SimpleClassItem.class.isAssignableFrom(realType)) {
-                    return sc -> List.of(sc.consume((Class) realType, (Class) classArg));
+                    return sc -> Collections.singletonList(sc.consume((Class) realType, (Class) classArg));
                 } else {
                     throw log.cannotConsume(clazz);
                 }
