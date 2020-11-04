@@ -1,4 +1,4 @@
-name: SmallRye Build
+name: Qlue Build
 
 on:
   push:
