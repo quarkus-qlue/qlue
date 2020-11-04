@@ -1,0 +1,36 @@
+name: SmallRye Build
+
+on:
+  push:
+    paths-ignore:
+      - '.gitattributes'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'NOTICE'
+      - 'README*'
+      - 'docs/**'
+  pull_request:
+    paths-ignore:
+      - '.gitattributes'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'NOTICE'
+      - 'README*'
+      - 'docs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: build with JDK 11
+
+    steps:
+      - uses: actions/checkout@v2
+        name: checkout
+
+      - uses: AdoptOpenJDK/install-jdk@v1
+        name: set up JDK 11
+        with:
+          version: 11
+
+      - name: build with maven
+        run: mvn -B formatter:validate verify --file pom.xml
