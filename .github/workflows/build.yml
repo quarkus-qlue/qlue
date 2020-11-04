@@ -1,22 +1,6 @@
 name: Qlue Build
 
-on:
-  push:
-    paths-ignore:
-      - '.gitattributes'
-      - '.gitignore'
-      - 'LICENSE'
-      - 'NOTICE'
-      - 'README*'
-      - 'docs/**'
-  pull_request:
-    paths-ignore:
-      - '.gitattributes'
-      - '.gitignore'
-      - 'LICENSE'
-      - 'NOTICE'
-      - 'README*'
-      - 'docs/**'
+on: [push, pull_request]
 
 jobs:
   build:
