@@ -108,6 +108,7 @@ public final class StepContext {
      *
      * @param type the item type (must not be {@code null})
      * @param item the item value (may be {@code null})
+     * @param <T> the item type
      * @throws IllegalArgumentException if this step was not declared to produce {@code type}, or if {@code type} is
      *         {@code null}, or if the item does not allow multiplicity but this method is called more than one time
      */
@@ -123,10 +124,11 @@ public final class StepContext {
      * Produce the given item. If the {@code type} refers to an item which is declared with multiplicity, then this
      * method can be called more than once for the given {@code type}, otherwise it must be called no more than once.
      *
-     * @param <U> the upper bound of the argument type
      * @param type the item type (must not be {@code null})
      * @param argument the item argument (must not be {@code null})
      * @param item the item value (may be {@code null})
+     * @param <U> the upper bound of the argument type
+     * @param <T> the item type
      * @throws IllegalArgumentException if this step was not declared to produce {@code type}, or if {@code type} is
      *         {@code null}, or if the item does not allow multiplicity but this method is called more than one time
      */
@@ -140,6 +142,7 @@ public final class StepContext {
      * Consume the value produced for the named item.
      *
      * @param type the item type (must not be {@code null})
+     * @param <T> the item type
      * @return the produced item (may be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -169,6 +172,7 @@ public final class StepContext {
      * @param type the item type (must not be {@code null})
      * @param argument the item argument (must not be {@code null})
      * @param <U> the upper bound of the argument type
+     * @param <T> the item type
      * @return the produced item (may be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -196,6 +200,7 @@ public final class StepContext {
      * is a mutable copy.
      *
      * @param type the item element type (must not be {@code null})
+     * @param <T> the item type
      * @return the produced items (may be empty, will not be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -228,6 +233,7 @@ public final class StepContext {
      * @param type the item element type (must not be {@code null})
      * @param argument the item argument (must not be {@code null})
      * @param <U> the upper bound of the argument type
+     * @param <T> the item type
      * @return the produced items (may be empty, will not be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -256,6 +262,7 @@ public final class StepContext {
      *
      * @param type the item element type (must not be {@code null})
      * @param comparator the comparator to use (must not be {@code null})
+     * @param <T> the item type
      * @return the produced items (may be empty, will not be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -274,6 +281,7 @@ public final class StepContext {
      * @param argument the item argument (must not be {@code null})
      * @param comparator the comparator to use (must not be {@code null})
      * @param <U> the upper bound of the argument type
+     * @param <T> the item type
      * @return the produced items (may be empty, will not be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -342,6 +350,8 @@ public final class StepContext {
      * required to produce it.
      *
      * @param type the item type (must not be {@code null})
+     * @param argument the item argument (must not be {@code null})
+     * @param <U> the upper bound of the argument type
      * @return {@code true} if the item will be consumed, {@code false} if it will not be or if this step does
      *         not produce the named item
      */

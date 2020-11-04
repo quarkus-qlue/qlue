@@ -36,6 +36,7 @@ public final class Success extends Result {
      * Consume the value produced for the named item.
      *
      * @param type the item type (must not be {@code null})
+     * @param <T> the item type
      * @return the produced item (may be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -54,6 +55,7 @@ public final class Success extends Result {
      * Consume the value produced for the named item.
      *
      * @param type the item type (must not be {@code null})
+     * @param <T> the item type
      * @return the produced item (may be {@code null})
      * @throws ClassCastException if the cast failed
      */
@@ -70,6 +72,7 @@ public final class Success extends Result {
      * Consume all of the values produced for the named item.
      *
      * @param type the item element type (must not be {@code null})
+     * @param <T> the item type
      * @return the produced items (may be empty, will not be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}
      */
@@ -89,6 +92,7 @@ public final class Success extends Result {
      * @param type the item type (must not be {@code null})
      * @param argument the item argument (must not be {@code null})
      * @param <U> the upper bound of the argument type
+     * @param <T> the item type
      * @return the produced item (may be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}, or if {@code type} is
      *         {@code null}
@@ -109,6 +113,7 @@ public final class Success extends Result {
      * @param type the item type (must not be {@code null})
      * @param argument the item argument (must not be {@code null})
      * @param <U> the upper bound of the argument type
+     * @param <T> the item type
      * @return the produced item (may be {@code null})
      * @throws ClassCastException if the cast failed
      */
@@ -127,6 +132,7 @@ public final class Success extends Result {
      * @param type the item element type (must not be {@code null})
      * @param argument the item argument (must not be {@code null})
      * @param <U> the upper bound of the argument type
+     * @param <T> the item type
      * @return the produced items (may be empty, will not be {@code null})
      * @throws IllegalArgumentException if this step was not declared to consume {@code type}
      */

@@ -266,7 +266,9 @@ public final class StepBuilder {
      * step may produce an actual value for this item, which will be shared to all consumers during execution.
      *
      * @param type the item type (must not be {@code null})
+     * @param argument the item argument (must not be {@code null})
      * @param flags the producer flag to apply (must not be {@code null})
+     * @param <U> the upper bound of the argument type
      * @return this builder
      */
     public <U> StepBuilder produces(Class<? extends ClassItem<U>> type, Class<? extends U> argument, ProduceFlags flags) {

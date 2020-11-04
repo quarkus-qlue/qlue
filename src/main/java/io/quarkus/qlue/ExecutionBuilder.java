@@ -33,6 +33,7 @@ public final class ExecutionBuilder {
      * Provide an initial item.
      *
      * @param item the item value
+     * @param <T> the item type
      * @return this builder
      * @throws IllegalArgumentException if this chain was not declared to initially produce {@code type},
      *         or if the item does not allow multiplicity but this method is called more than one time
@@ -51,6 +52,7 @@ public final class ExecutionBuilder {
      *
      * @param type the item type (must not be {@code null})
      * @param item the item value
+     * @param <T> the item type
      * @return this builder
      * @throws IllegalArgumentException if this chain was not declared to initially produce {@code type},
      *         or if {@code type} is {@code null}, or if the item does not allow multiplicity but this method is called
@@ -72,6 +74,7 @@ public final class ExecutionBuilder {
      * @param type the item type (must not be {@code null})
      * @param argument the item argument (must not be {@code null})
      * @param item the item value
+     * @param <T> the item type
      * @param <U> the upper bound of the argument type
      * @return this builder
      * @throws IllegalArgumentException if this chain was not declared to initially produce {@code type},

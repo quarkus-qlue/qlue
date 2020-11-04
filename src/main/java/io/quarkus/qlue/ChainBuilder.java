@@ -131,6 +131,7 @@ public final class ChainBuilder {
      * Set the injection mapper to use for subsequent step class and object handling.
      *
      * @param injectionMapper the injection mapper to use (must not be {@code null})
+     * @return this builder
      */
     public ChainBuilder setInjectionMapper(final InjectionMapper injectionMapper) {
         this.injectionMapper = Assert.checkNotNullParam("injectionMapper", injectionMapper);
@@ -198,6 +199,7 @@ public final class ChainBuilder {
      * the method, producing any results that are produced by the method.
      *
      * @param clazz the step class to add (must not be {@code null})
+     * @param <T> the step class type
      * @return this builder
      */
     public <T> ChainBuilder addStepClass(Class<T> clazz) {
