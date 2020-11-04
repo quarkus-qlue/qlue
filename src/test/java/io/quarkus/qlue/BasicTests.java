@@ -1,9 +1,10 @@
 package io.quarkus.qlue;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -39,7 +40,7 @@ public class BasicTests {
         final Result result = chain.createExecutionBuilder().execute(Runnable::run);
         assertTrue(ran.get());
         assertTrue(result.isSuccess());
-        assertNotNull(((Success) result).consume(DummyItem.class));
+        assertNotNull(result.asSuccess().consume(DummyItem.class));
     }
 
     @Test
@@ -108,7 +109,7 @@ public class BasicTests {
         final Chain chain = builder.build();
         final Result result = chain.createExecutionBuilder().execute(Runnable::run);
         assertTrue(result.isSuccess());
-        assertNotNull(((Success) result).consume(DummyItem2.class));
+        assertNotNull(result.asSuccess().consume(DummyItem2.class));
     }
 
     @Test
@@ -130,7 +131,7 @@ public class BasicTests {
         eb.produce(DummyItem.class, new DummyItem());
         final Result result = eb.execute(Runnable::run);
         assertTrue(result.isSuccess());
-        assertNotNull(((Success) result).consume(DummyItem2.class));
+        assertNotNull(result.asSuccess().consume(DummyItem2.class));
     }
 
     @Test
@@ -158,7 +159,7 @@ public class BasicTests {
         final Chain chain = builder.build();
         final Result result = chain.createExecutionBuilder().execute(Runnable::run);
         assertTrue(result.isSuccess());
-        assertNotNull(((Success) result).consume(DummyItem.class));
+        assertNotNull(result.asSuccess().consume(DummyItem.class));
         assertFalse(ran.get());
     }
 
@@ -184,12 +185,7 @@ public class BasicTests {
         stepBuilder.produces(DummyItem2.class);
         stepBuilder.consumes(DummyItem.class);
         stepBuilder.build();
-        try {
-            builder.build();
-            fail("Expected exception");
-        } catch (ChainBuildException expected) {
-            // ok
-        }
+        assertThatExceptionOfType(ChainBuildException.class).isThrownBy(builder::build);
     }
 
     @Test
@@ -210,12 +206,7 @@ public class BasicTests {
         });
         stepBuilder.produces(DummyItem.class);
         stepBuilder.build();
-        try {
-            builder.build();
-            fail("Expected exception");
-        } catch (ChainBuildException expected) {
-            // ok
-        }
+        assertThatExceptionOfType(ChainBuildException.class).isThrownBy(builder::build);
     }
 
     @Test
@@ -236,12 +227,7 @@ public class BasicTests {
         });
         stepBuilder.produces(DummyItem.class, ProduceFlag.OVERRIDABLE);
         stepBuilder.build();
-        try {
-            builder.build();
-            fail("Expected exception");
-        } catch (ChainBuildException expected) {
-            // ok
-        }
+        assertThatExceptionOfType(ChainBuildException.class).isThrownBy(builder::build);
     }
 
     @Test
@@ -262,6 +248,6 @@ public class BasicTests {
         });
         stepBuilder.produces(DummyItem.class);
         stepBuilder.build();
-        builder.build();
+        assertThatCode(builder::build).doesNotThrowAnyException();
     }
 }
