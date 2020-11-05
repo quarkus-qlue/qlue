@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.quarkus.qlue</groupId>
-    <artifactId>quarkus-qlue</artifactId>
+    <artifactId>qlue</artifactId>
     <version>0.9.0-SNAPSHOT</version>
 
     <parent>
