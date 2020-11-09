@@ -103,6 +103,9 @@ public interface Messages extends BasicLogger {
     @Message(id = 26, value = "@AlwaysProduce annotation cannot be added to non-producer on %s")
     IllegalArgumentException alwaysProduceNotProducer(AnnotatedElement element);
 
+    @Message(id = 27, value = "Too many attachments present on target object")
+    IllegalStateException tooManyAttachments();
+
     // debug logs
 
     @LogMessage(level = Logger.Level.DEBUG)
