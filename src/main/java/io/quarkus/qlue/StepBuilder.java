@@ -22,6 +22,10 @@ public final class StepBuilder {
     private final Consumer<StepContext> step;
     private final Map<ItemId, Consume> consumes = new HashMap<>();
     private final Map<ItemId, Produce> produces = new HashMap<>();
+    private AttachmentKey<?> key1;
+    private Object val1;
+    private AttachmentKey<?> key2;
+    private Object val2;
 
     StepBuilder(final ChainBuilder chainBuilder, final Consumer<StepContext> step) {
         this.chainBuilder = chainBuilder;
@@ -401,6 +405,98 @@ public final class StepBuilder {
      */
     public ChainBuilder buildIf(BooleanSupplier supp) {
         return supp.getAsBoolean() ? build() : null;
+    }
+
+    // -- //
+
+    /**
+     * Get the attachment for the given key, if any.
+     *
+     * @param key the attachment key
+     * @param <T> the value type
+     * @return the attachment value or {@code null} if none is present
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getAttachment(AttachmentKey<T> key) {
+        if (key == key1) {
+            return (T) val1;
+        } else if (key == key2) {
+            return (T) val2;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * Determine whether the given key is attached.
+     *
+     * @param key the key
+     * @return {@code true} if the key is attached, {@code false} otherwise
+     */
+    public boolean hasAttachment(AttachmentKey<?> key) {
+        return key == key1 || key == key2;
+    }
+
+    /**
+     * Put an attachment on to this object.
+     *
+     * @param key the attachment key (must not be {@code null})
+     * @param value the attachment value (must not be {@code null})
+     * @param <T> the value type
+     * @return the previous value of the attachment, or {@code null} if there was no previous value
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T putAttachment(AttachmentKey<T> key, T value) {
+        Assert.checkNotNullParam("key", key);
+        Assert.checkNotNullParam("value", value);
+        if (key == key1) {
+            T old = (T) val1;
+            val1 = value;
+            return old;
+        } else if (key == key2) {
+            T old = (T) val2;
+            val2 = value;
+            return old;
+        } else if (key1 == null) {
+            key1 = key;
+            val1 = value;
+            return null;
+        } else if (key2 == null) {
+            key2 = key;
+            val2 = value;
+            return null;
+        } else {
+            throw log.tooManyAttachments();
+        }
+    }
+
+    /**
+     * Put an attachment on to this object if it is not already present.
+     *
+     * @param key the attachment key (must not be {@code null})
+     * @param value the attachment value (must not be {@code null})
+     * @param <T> the value type
+     * @return the previous value of the attachment, or {@code null} if there was no previous value
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T putAttachmentIfAbsent(AttachmentKey<T> key, T value) {
+        Assert.checkNotNullParam("key", key);
+        Assert.checkNotNullParam("value", value);
+        if (key == key1) {
+            return (T) val1;
+        } else if (key == key2) {
+            return (T) val2;
+        } else if (key1 == null) {
+            key1 = key;
+            val1 = value;
+            return null;
+        } else if (key2 == null) {
+            key2 = key;
+            val2 = value;
+            return null;
+        } else {
+            throw log.tooManyAttachments();
+        }
     }
 
     // -- //
