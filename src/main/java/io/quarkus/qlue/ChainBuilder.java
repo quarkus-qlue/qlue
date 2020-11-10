@@ -326,7 +326,7 @@ public final class ChainBuilder {
                             retVal = method.invoke(instance, args);
                         } catch (IllegalAccessException | InvocationTargetException e) {
                             log.failedToInvokeMethod(method, e);
-                            stepContext.markAsFailed();
+                            stepContext.addProblem(e);
                             return;
                         }
                         retHandler.accept(stepContext, retVal);
