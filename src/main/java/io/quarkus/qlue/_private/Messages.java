@@ -106,6 +106,10 @@ public interface Messages extends BasicLogger {
     @Message(id = 27, value = "Too many attachments present on target object")
     IllegalStateException tooManyAttachments();
 
+    @LogMessage(level = Logger.Level.WARN)
+    @Message(id = 28, value = "No public constructor available on %s")
+    void nonPublicConstructor(Class<?> clazz);
+
     // debug logs
 
     @LogMessage(level = Logger.Level.DEBUG)

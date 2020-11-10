@@ -210,7 +210,7 @@ public final class ChainBuilder {
         classStepBuilder.produces(StepClassItem.class, clazz);
         // get the overall class handler
         Consumer<StepContext> classHandler = injectionMapper.handleClass(classStepBuilder, clazz);
-        // find the constructor
+        // find a public constructor
         Constructor<?> ctor = null;
         for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
             if (Modifier.isPublic(constructor.getModifiers())) {
@@ -220,6 +220,20 @@ public final class ChainBuilder {
                 ctor = constructor;
             }
         }
+        // OK, find a non-private constructor and warn
+        if (ctor == null) {
+            for (Constructor<?> constructor : clazz.getDeclaredConstructors()) {
+                if (!Modifier.isPrivate(constructor.getModifiers())) {
+                    if (ctor != null) {
+                        throw log.multipleConstructors(clazz);
+                    }
+                    ctor = constructor;
+                    log.nonPublicConstructor(clazz);
+                    ctor.setAccessible(true);
+                }
+            }
+        }
+        // no eligible constructor found
         if (ctor == null) {
             throw log.noConstructor(clazz);
         }
