@@ -256,6 +256,7 @@ public final class ChainBuilder {
             field.setAccessible(true);
             fieldVals.put(field, injectionMapper.handleField(classStepBuilder, field));
         }
+        Consumer<StepContext> classFinish = injectionMapper.handleClassFinish(classStepBuilder, clazz);
         // now create the real class build step
         cons.setDelegate(new Consumer<StepContext>() {
             public void accept(final StepContext stepContext) {
@@ -286,6 +287,7 @@ public final class ChainBuilder {
                         return;
                     }
                 }
+                classFinish.accept(stepContext);
                 // and we're set
                 stepContext.produce(clazz, new StepClassItem(instance));
             }

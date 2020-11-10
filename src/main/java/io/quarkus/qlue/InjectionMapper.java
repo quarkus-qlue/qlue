@@ -54,6 +54,16 @@ public interface InjectionMapper {
     Consumer<StepContext> handleClass(StepBuilder stepBuilder, Class<?> clazz) throws IllegalArgumentException;
 
     /**
+     * Perform class-wide finishing for a step class, returning a consumer that accepts the step context.
+     *
+     * @param stepBuilder the step builder (not {@code null})
+     * @param clazz the class (not {@code null})
+     * @return the consumer (must not be {@code null})
+     * @throws IllegalArgumentException if the class is not acceptable
+     */
+    Consumer<StepContext> handleClassFinish(StepBuilder stepBuilder, Class<?> clazz) throws IllegalArgumentException;
+
+    /**
      * Perform method-wide setup for a step method, returning a consumer that handles the step context.
      *
      * @param stepBuilder the step builder (not {@code null})
@@ -113,6 +123,12 @@ public interface InjectionMapper {
      */
     InjectionMapper BASIC = new InjectionMapper() {
         public Consumer<StepContext> handleClass(final StepBuilder stepBuilder, final Class<?> clazz)
+                throws IllegalArgumentException {
+            return sc -> {
+            };
+        }
+
+        public Consumer<StepContext> handleClassFinish(final StepBuilder stepBuilder, final Class<?> clazz)
                 throws IllegalArgumentException {
             return sc -> {
             };
@@ -425,6 +441,11 @@ public interface InjectionMapper {
 
         default Consumer<StepContext> handleClass(StepBuilder stepBuilder, Class<?> clazz) throws IllegalArgumentException {
             return getDelegate().handleClass(stepBuilder, clazz);
+        }
+
+        default Consumer<StepContext> handleClassFinish(StepBuilder stepBuilder, Class<?> clazz)
+                throws IllegalArgumentException {
+            return getDelegate().handleClassFinish(stepBuilder, clazz);
         }
 
         default Consumer<StepContext> handleStepMethod(StepBuilder stepBuilder, Method method) throws IllegalArgumentException {
