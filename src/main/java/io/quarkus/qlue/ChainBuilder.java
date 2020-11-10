@@ -150,12 +150,13 @@ public final class ChainBuilder {
         Assert.checkNotNullParam("obj", obj);
         Class<?> clazz = obj.getClass();
         // now create steps for each step method
-        for (Method method : clazz.getMethods()) {
+        for (Method method : clazz.getDeclaredMethods()) {
             if (Modifier.isStatic(method.getModifiers())) {
                 // skip static methods
                 continue;
             }
             if (injectionMapper.isStepMethod(method)) {
+                method.setAccessible(true);
                 SwitchableConsumer<StepContext> cons = new SwitchableConsumer<>(method.toString());
                 StepBuilder stepBuilder = addRawStep(cons);
                 Consumer<StepContext> methodHandler = injectionMapper.handleStepMethod(stepBuilder, method);
@@ -252,6 +253,7 @@ public final class ChainBuilder {
                 // skip it
                 continue;
             }
+            field.setAccessible(true);
             fieldVals.put(field, injectionMapper.handleField(classStepBuilder, field));
         }
         // now create the real class build step
@@ -290,12 +292,13 @@ public final class ChainBuilder {
         });
         classStepBuilder.build();
         // now create steps for each step method
-        for (Method method : clazz.getMethods()) {
+        for (Method method : clazz.getDeclaredMethods()) {
             if (Modifier.isStatic(method.getModifiers())) {
                 // skip static methods
                 continue;
             }
             if (injectionMapper.isStepMethod(method)) {
+                method.setAccessible(true);
                 cons = new SwitchableConsumer<>(method.toString());
                 StepBuilder stepBuilder = addRawStep(cons);
                 stepBuilder.consumes(StepClassItem.class, clazz);
