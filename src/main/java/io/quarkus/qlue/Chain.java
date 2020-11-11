@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +41,8 @@ public final class Chain {
     Chain(final ChainBuilder chainBuilder) throws ChainBuildException {
         // copy information from chainBuilder so it can be safely reused
         this.classLoader = chainBuilder.classLoader;
-        final Set<StepBuilder> steps = new HashSet<>(chainBuilder.steps);
+        final Set<StepBuilder> steps = Collections.newSetFromMap(new IdentityHashMap<>(chainBuilder.steps.size()));
+        steps.addAll(chainBuilder.steps);
         final Set<ItemId> initialIds = new HashSet<>(chainBuilder.initialIds);
         final Set<ItemId> finalIds = new HashSet<>(chainBuilder.finalIds);
         // compile master produce/consume maps
@@ -82,7 +84,7 @@ public final class Chain {
                 list.add(toBeAdded);
             }
         }
-        final Set<StepBuilder> included = new HashSet<>();
+        final Set<StepBuilder> included = Collections.newSetFromMap(new IdentityHashMap<>());
         // now begin to wire dependencies
         final ArrayDeque<StepBuilder> toAdd = new ArrayDeque<>();
         final Set<Produce> lastDependencies = new HashSet<>();
