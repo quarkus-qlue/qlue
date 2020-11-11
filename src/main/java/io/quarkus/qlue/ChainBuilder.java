@@ -8,8 +8,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +31,8 @@ import io.smallrye.common.constraint.Assert;
  */
 public final class ChainBuilder {
 
-    final Set<StepBuilder> steps = new HashSet<>();
+    // StepBuilders are compared by identity deliberately
+    final Set<StepBuilder> steps = Collections.newSetFromMap(new IdentityHashMap<>());
     final Set<ItemId> initialIds = new HashSet<>();
     final Set<ItemId> finalIds = new HashSet<>();
     InjectionMapper injectionMapper = InjectionMapper.BASIC;
