@@ -18,6 +18,11 @@
 
     <description>Quarkus Qlue step wiring framework</description>
 
+    <issueManagement>
+      <system>GitHub</system>
+      <url>https://github.com/quarkusio/quarkus-qlue/issues</url>
+    </issueManagement>
+
     <properties>
         <version.io.smallrye.common>1.4.1</version.io.smallrye.common>
         <jdk.target>8</jdk.target>
