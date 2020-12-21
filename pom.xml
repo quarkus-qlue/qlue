@@ -95,4 +95,11 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <scm>
+        <url>https://github.com/quarkusio/qlue</url>
+        <connection>scm:git:git@github.com:quarkusio/qlue.git</connection>
+        <developerConnection>scm:git:git@github.com:quarkusio/qlue.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
 </project>
