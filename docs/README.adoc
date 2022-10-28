@@ -14,7 +14,7 @@ The _chain_ is assembled using a _chain builder_ which, as one might expect, fol
 
 === Basic example
 
-In this basic example, a _step method_ executes which _produces_ a _simple item_ that can be accessed at the end of the _build chain_ _execution_.
+In this basic example, a _step method_ executes which _produces_ a _simple item_ that can be accessed at the end of the _chain_'s _execution_.
 
 .Basic example
 [source,java]
@@ -108,13 +108,13 @@ In cases where an item is returned, returning a `null` will cause consumers of t
 
 A _step object_ is any Java object which contains zero or more accessible methods which are annotated with the `@Step` annotation.
 
-Such objects can be passed in to the _build chain builder_ directly. The object will be used as-is, with the object's _step methods_ being invoked as needed during the build process.
+Such objects can be passed in to the _chain builder_ directly. The object will be used as-is, with the object's _step methods_ being invoked as needed during the build process.
 
 ==== Step classes
 
 A _step class_ is a Java class with a single accessible constructor which contains zero or more accessible methods which are annotated with the `@Step` annotation.
 
-When a _step class_ is added to the build chain builder, an instance of the class will be instantiated using the accessible constructor. This instance will be used to receive invocations of the _step methods_ as needed during the build process.
+When a _step class_ is added to the chain builder, an instance of the class will be instantiated using the accessible constructor. This instance will be used to receive invocations of the _step methods_ as needed during the build process.
 
 ==== Raw steps
 
