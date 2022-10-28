@@ -1,0 +1,121 @@
+= Quarkus Qlue: The step wiring framework
+
+image:https://github.com/quarkusio/qlue/workflows/Qlue%20Build/badge.svg[Qlue Build]
+
+== Maven
+
+The Maven coordinates for this project are `io.quarkus.qlue:qlue`.
+
+== Usage
+
+Quarkus Qlue is a framework which wires up independent _steps_ into an overall ordered _chain_ of tasks to run. The ordering uses a produces/consumes model based on _items_.
+
+The _chain_ is assembled using a _chain builder_ which, as one might expect, follows a builder pattern to provide _initial items_, express _final item_ requirements, and add _steps_ which can produce and/or consume _items_.
+
+=== Basic example
+
+In this basic example, a _step method_ executes which _produces_ a _simple item_ that can be accessed at the end of the _build chain_ _execution_.
+
+.Basic example
+[source,java]
+----
+public final class MessageItem extends SimpleItem {
+    private final String message;
+
+    public MessageItem(String message) {
+        this.message = message;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+}
+
+// later...
+
+public final class Main {
+    private Main() {}
+
+    public static void main(String[] args) {
+        // Build a new chain
+        final ChainBuilder builder = Chain.builder();
+        builder.addStepObject(new Object() {
+            @Step
+            public MessageItem produceHelloWorld() {
+                return new MessageItem("Hello World");
+            }
+        });
+        // make sure the step is run
+        builder.addFinal(MessageItem.class);
+        // create the reusable chain
+        Chain chain = builder.build();
+        // now create a new execution of the chain
+        ExecutionBuilder executionBuilder = chain.createExecutionBuilder();
+        // run the chain using a trivial executor
+        final Result result = executionBuilder.execute(Runnable::run);
+        if (result.isSuccess()) {
+            String message = result.asSuccess().consume(MessageItem.class).getMessage();
+            System.out.println(message);
+        } else {
+            System.err.println("Oh no :(");
+        }
+    }
+----
+
+=== Chain builder
+
+The chain builder is used to assemble the list of _step objects_, _step classes_, and _raw steps_. Additionally, it can be used to specify initial input _items_ and final output _items_ (as shown in the trivial example above).
+
+=== Items
+
+There are three essential kinds of _item_ which can be used with Qlue:
+
+* _Simple items_, which are `final` classes which extend the `SimpleItem` base class; such items can be produced by one step and consumed by many steps
+* _Multi items_, which are `final` classes which extend the `MultiItem` base class; such items can be produced by many steps and consumed by many steps
+* _Empty items_, which are used _only_ for ordering and cannot be constructed; such items can only be used in _ordering constraints_ (e.g. annotations such as `@BeforeConsume` or `@AfterProduce`)
+
+=== Steps
+
+_Steps_ are scheduled such that any step which consumes an _item_ executes after any step which produces the _item_.
+
+==== Step methods
+
+A _step method_ is an accessible method which is annotated with the `@Step` annotation. The parameters of a step method must be one of the following types:
+
+* A _simple item_, indicating that the item of that type is consumed by the step
+* A `List` of a _multi item_, indicating that all items of the _item_'s type are consumed by the step
+* An `Optional` of a _simple item_, indicating that the item of the `Optional`'s type is _optionally_ consumed by the step
+* A `Consumer` of a _simple item_ or _multi item_, indicating that the item is produced by the step by passing the produced item into the `Consumer`
+
+The return type of the method must be one of the following:
+
+* `void`
+* A _simple item_, indicating that the item is produced by the method
+* A _multi item_, indicating that the item is produced by the method
+
+In cases where an item is returned, returning a `null` will cause consumers of the item to receive a `null` value for that item.
+
+.An example of a step method which produces and consumes simple values
+[source,java]
+----
+    @Step
+    public MessageItem assembleMessage(NameItem name, GreetingItem) {
+        return new MessageItem(greeting.getGreeting() + ", " + name.getName());
+    }
+----
+
+==== Step objects
+
+A _step object_ is any Java object which contains zero or more accessible methods which are annotated with the `@Step` annotation.
+
+Such objects can be passed in to the _build chain builder_ directly. The object will be used as-is, with the object's _step methods_ being invoked as needed during the build process.
+
+==== Step classes
+
+A _step class_ is a Java class with a single accessible constructor which contains zero or more accessible methods which are annotated with the `@Step` annotation.
+
+When a _step class_ is added to the build chain builder, an instance of the class will be instantiated using the accessible constructor. This instance will be used to receive invocations of the _step methods_ as needed during the build process.
+
+==== Raw steps
+
+A _raw step_ is a step which interacts directly with the `StepContext` to directly produce and consume items. Normally, this type of step is reserved for advanced use cases.
