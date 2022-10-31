@@ -1,5 +1,6 @@
 package io.quarkus.qlue;
 
+import static java.lang.invoke.MethodHandles.lookup;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -69,7 +70,7 @@ public class ReflectTests {
             public void getTheOtherItem(Consumer<DummyItem2> consumer) {
                 consumer.accept(new DummyItem2());
             }
-        });
+        }, lookup());
         builder.addFinal(DummyItem.class);
         builder.addFinal(DummyItem2.class);
         Chain chain = builder.build();

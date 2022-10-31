@@ -84,7 +84,7 @@ public interface Messages extends BasicLogger {
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 21, value = "Failed to invoke constructor %s")
-    void failedToInvokeConstructor(Constructor<?> ctor, @Cause Exception e);
+    void failedToInvokeConstructor(Constructor<?> ctor, @Cause Throwable t);
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 22, value = "Failed to write to field %s")
@@ -92,7 +92,7 @@ public interface Messages extends BasicLogger {
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 23, value = "Failed to invoke method %s")
-    void failedToInvokeMethod(Method method, @Cause Exception e);
+    void failedToInvokeMethod(Method method, @Cause Throwable e);
 
     @Message(id = 24, value = "Execution was not successful")
     UnsupportedOperationException didNotSucceed();

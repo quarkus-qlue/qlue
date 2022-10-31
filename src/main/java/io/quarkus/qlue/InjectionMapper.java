@@ -4,6 +4,7 @@ import static io.quarkus.qlue.ReflectUtil.rawTypeOf;
 import static io.quarkus.qlue.ReflectUtil.rawTypeOfParameter;
 import static io.quarkus.qlue.ReflectUtil.typeOfParameter;
 import static io.quarkus.qlue._private.Messages.log;
+import static java.lang.invoke.MethodHandles.Lookup;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Executable;
@@ -48,30 +49,35 @@ public interface InjectionMapper {
      *
      * @param stepBuilder the step builder (not {@code null})
      * @param clazz the class (not {@code null})
+     * @param lookup the {@link Lookup} to use
      * @return the consumer (must not be {@code null})
      * @throws IllegalArgumentException if the class is not acceptable
      */
-    Consumer<StepContext> handleClass(StepBuilder stepBuilder, Class<?> clazz) throws IllegalArgumentException;
+    Consumer<StepContext> handleClass(StepBuilder stepBuilder, Class<?> clazz, Lookup lookup) throws IllegalArgumentException;
 
     /**
      * Perform class-wide finishing for a step class, returning a consumer that accepts the step context.
      *
      * @param stepBuilder the step builder (not {@code null})
      * @param clazz the class (not {@code null})
+     * @param lookup the {@link Lookup} to use
      * @return the consumer (must not be {@code null})
      * @throws IllegalArgumentException if the class is not acceptable
      */
-    Consumer<StepContext> handleClassFinish(StepBuilder stepBuilder, Class<?> clazz) throws IllegalArgumentException;
+    Consumer<StepContext> handleClassFinish(StepBuilder stepBuilder, Class<?> clazz, Lookup lookup)
+            throws IllegalArgumentException;
 
     /**
      * Perform method-wide setup for a step method, returning a consumer that handles the step context.
      *
      * @param stepBuilder the step builder (not {@code null})
      * @param method the method (not {@code null})
+     * @param lookup the {@link Lookup} to use
      * @return the consumer (must not be {@code null})
      * @throws IllegalArgumentException if the method is not acceptable
      */
-    Consumer<StepContext> handleStepMethod(StepBuilder stepBuilder, Method method) throws IllegalArgumentException;
+    Consumer<StepContext> handleStepMethod(StepBuilder stepBuilder, Method method, Lookup lookup)
+            throws IllegalArgumentException;
 
     /**
      * Process a single parameter, returning a function that maps the step context to the actual parameter value.
@@ -79,10 +85,11 @@ public interface InjectionMapper {
      * @param stepBuilder the step builder (not {@code null})
      * @param executable the method or constructor (not {@code null})
      * @param paramIndex the parameter index
+     * @param lookup the {@link Lookup} to use
      * @return the mapping function (must not be {@code null})
      * @throws IllegalArgumentException if the parameter is not acceptable
      */
-    Function<StepContext, Object> handleParameter(StepBuilder stepBuilder, Executable executable, int paramIndex)
+    Function<StepContext, Object> handleParameter(StepBuilder stepBuilder, Executable executable, int paramIndex, Lookup lookup)
             throws IllegalArgumentException;
 
     /**
@@ -91,10 +98,12 @@ public interface InjectionMapper {
      *
      * @param stepBuilder the step builder (not {@code null})
      * @param method the method (not {@code null})
+     * @param lookup the {@link Lookup} to use
      * @return the consumer (must not be {@code null})
      * @throws IllegalArgumentException if the return type is not acceptable
      */
-    BiConsumer<StepContext, Object> handleReturnValue(StepBuilder stepBuilder, Method method) throws IllegalArgumentException;
+    BiConsumer<StepContext, Object> handleReturnValue(StepBuilder stepBuilder, Method method, Lookup lookup)
+            throws IllegalArgumentException;
 
     /**
      * Process a single non-{@code field} field, returning a function that maps the step context to the actual injected
@@ -102,18 +111,21 @@ public interface InjectionMapper {
      *
      * @param stepBuilder the step builder (not {@code null})
      * @param field the field (not {@code null})
+     * @param lookup the {@link Lookup} to use
      * @return the mapping function (must not be {@code null})
      * @throws IllegalArgumentException if the field is not acceptable
      */
-    Function<StepContext, Object> handleField(StepBuilder stepBuilder, Field field) throws IllegalArgumentException;
+    Function<StepContext, Object> handleField(StepBuilder stepBuilder, Field field, Lookup lookup)
+            throws IllegalArgumentException;
 
     /**
      * Determine whether a method is a step method. Methods which are not step methods are skipped over.
      *
-     * @param method the method
+     * @param method the method (not {@code null})
+     * @param lookup the {@link Lookup} to use
      * @return {@code true} if the method is a step method, or {@code false} otherwise
      */
-    boolean isStepMethod(Method method);
+    boolean isStepMethod(Method method, final Lookup lookup);
 
     /**
      * An injection mapper that uses the standard annotation set in {@link io.quarkus.qlue.annotation} to identify
@@ -122,20 +134,20 @@ public interface InjectionMapper {
      * of item types.
      */
     InjectionMapper BASIC = new InjectionMapper() {
-        public Consumer<StepContext> handleClass(final StepBuilder stepBuilder, final Class<?> clazz)
+        public Consumer<StepContext> handleClass(final StepBuilder stepBuilder, final Class<?> clazz, final Lookup lookup)
                 throws IllegalArgumentException {
             return sc -> {
             };
         }
 
-        public Consumer<StepContext> handleClassFinish(final StepBuilder stepBuilder, final Class<?> clazz)
+        public Consumer<StepContext> handleClassFinish(final StepBuilder stepBuilder, final Class<?> clazz, final Lookup lookup)
                 throws IllegalArgumentException {
             return sc -> {
             };
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        public Consumer<StepContext> handleStepMethod(final StepBuilder stepBuilder, final Method method)
+        public Consumer<StepContext> handleStepMethod(final StepBuilder stepBuilder, final Method method, final Lookup lookup)
                 throws IllegalArgumentException {
             BeforeConsume[] beforeConsumeAnnotations = method.getAnnotationsByType(BeforeConsume.class);
             for (BeforeConsume ann : beforeConsumeAnnotations) {
@@ -196,7 +208,7 @@ public interface InjectionMapper {
         }
 
         public Function<StepContext, Object> handleParameter(final StepBuilder stepBuilder, final Executable executable,
-                final int paramIndex) throws IllegalArgumentException {
+                final int paramIndex, final Lookup lookup) throws IllegalArgumentException {
             Parameter parameter = executable.getParameters()[paramIndex];
             Type type = parameter.getParameterizedType();
             return executable instanceof Method ? handleInput(stepBuilder, type, parameter)
@@ -204,7 +216,8 @@ public interface InjectionMapper {
         }
 
         @SuppressWarnings({ "unchecked", "rawtypes" })
-        public BiConsumer<StepContext, Object> handleReturnValue(final StepBuilder stepBuilder, final Method method)
+        public BiConsumer<StepContext, Object> handleReturnValue(final StepBuilder stepBuilder, final Method method,
+                final Lookup lookup)
                 throws IllegalArgumentException {
             Type type = method.getGenericReturnType();
             Class<?> clazz = rawTypeOf(type);
@@ -251,12 +264,12 @@ public interface InjectionMapper {
             throw log.cannotProduce(clazz);
         }
 
-        public Function<StepContext, Object> handleField(final StepBuilder stepBuilder, final Field field)
+        public Function<StepContext, Object> handleField(final StepBuilder stepBuilder, final Field field, final Lookup lookup)
                 throws IllegalArgumentException {
             return handleNonConsumerInput(stepBuilder, field.getGenericType(), field);
         }
 
-        public boolean isStepMethod(final Method method) {
+        public boolean isStepMethod(final Method method, final Lookup lookup) {
             Step step = method.getAnnotation(Step.class);
             if (step == null) {
                 return false;
@@ -439,36 +452,39 @@ public interface InjectionMapper {
     interface Delegating extends InjectionMapper {
         InjectionMapper getDelegate();
 
-        default Consumer<StepContext> handleClass(StepBuilder stepBuilder, Class<?> clazz) throws IllegalArgumentException {
-            return getDelegate().handleClass(stepBuilder, clazz);
-        }
-
-        default Consumer<StepContext> handleClassFinish(StepBuilder stepBuilder, Class<?> clazz)
+        default Consumer<StepContext> handleClass(StepBuilder stepBuilder, Class<?> clazz, final Lookup lookup)
                 throws IllegalArgumentException {
-            return getDelegate().handleClassFinish(stepBuilder, clazz);
+            return getDelegate().handleClass(stepBuilder, clazz, lookup);
         }
 
-        default Consumer<StepContext> handleStepMethod(StepBuilder stepBuilder, Method method) throws IllegalArgumentException {
-            return getDelegate().handleStepMethod(stepBuilder, method);
-        }
-
-        default Function<StepContext, Object> handleParameter(StepBuilder stepBuilder, Executable executable, int paramIndex)
+        default Consumer<StepContext> handleClassFinish(StepBuilder stepBuilder, Class<?> clazz, final Lookup lookup)
                 throws IllegalArgumentException {
-            return getDelegate().handleParameter(stepBuilder, executable, paramIndex);
+            return getDelegate().handleClassFinish(stepBuilder, clazz, lookup);
         }
 
-        default BiConsumer<StepContext, Object> handleReturnValue(StepBuilder stepBuilder, Method method)
+        default Consumer<StepContext> handleStepMethod(StepBuilder stepBuilder, Method method, final Lookup lookup)
                 throws IllegalArgumentException {
-            return getDelegate().handleReturnValue(stepBuilder, method);
+            return getDelegate().handleStepMethod(stepBuilder, method, lookup);
         }
 
-        default Function<StepContext, Object> handleField(StepBuilder stepBuilder, Field field)
+        default Function<StepContext, Object> handleParameter(StepBuilder stepBuilder, Executable executable, int paramIndex,
+                final Lookup lookup)
                 throws IllegalArgumentException {
-            return getDelegate().handleField(stepBuilder, field);
+            return getDelegate().handleParameter(stepBuilder, executable, paramIndex, lookup);
         }
 
-        default boolean isStepMethod(Method method) {
-            return getDelegate().isStepMethod(method);
+        default BiConsumer<StepContext, Object> handleReturnValue(StepBuilder stepBuilder, Method method, final Lookup lookup)
+                throws IllegalArgumentException {
+            return getDelegate().handleReturnValue(stepBuilder, method, lookup);
+        }
+
+        default Function<StepContext, Object> handleField(StepBuilder stepBuilder, Field field, final Lookup lookup)
+                throws IllegalArgumentException {
+            return getDelegate().handleField(stepBuilder, field, lookup);
+        }
+
+        default boolean isStepMethod(Method method, final Lookup lookup) {
+            return getDelegate().isStepMethod(method, lookup);
         }
     }
 }
