@@ -11,7 +11,7 @@
     <parent>
         <artifactId>smallrye-parent</artifactId>
         <groupId>io.smallrye</groupId>
-        <version>23</version>
+        <version>42</version>
     </parent>
 
     <name>Quarkus Qlue</name>
@@ -24,8 +24,7 @@
     </issueManagement>
 
     <properties>
-        <version.io.smallrye.common>1.4.1</version.io.smallrye.common>
-        <jdk.target>8</jdk.target>
+        <version.io.smallrye.common>2.2.0</version.io.smallrye.common>
     </properties>
 
     <build>
@@ -38,20 +37,6 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
-        <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>default-compile</id>
-                        <configuration>
-                            <source>${jdk.target}</source>
-                            <target>${jdk.target}</target>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
 
     <dependencyManagement>
@@ -100,7 +85,7 @@
         <dependency>
             <groupId>org.jboss.logmanager</groupId>
             <artifactId>jboss-logmanager</artifactId>
-            <version>2.1.17.Final</version>
+            <version>3.0.2.Final</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
