@@ -11,7 +11,7 @@
     <parent>
         <artifactId>smallrye-parent</artifactId>
         <groupId>io.smallrye</groupId>
-        <version>42</version>
+        <version>43-SNAPSHOT</version>
     </parent>
 
     <name>Quarkus Qlue</name>
@@ -25,6 +25,7 @@
 
     <properties>
         <version.io.smallrye.common>2.2.0</version.io.smallrye.common>
+        <test.loglevel>INFO</test.loglevel>
     </properties>
 
     <build>
@@ -37,6 +38,17 @@
                 <filtering>true</filtering>
             </resource>
         </resources>
+        <plugins>
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <systemPropertyVariables>
+                        <java.util.logging.manager>org.jboss.logmanager.LogManager</java.util.logging.manager>
+                        <test.loglevel>${test.loglevel}</test.loglevel>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 
     <dependencyManagement>

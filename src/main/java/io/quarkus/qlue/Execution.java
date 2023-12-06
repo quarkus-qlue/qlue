@@ -1,10 +1,11 @@
 package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
-import static java.lang.Math.max;
 import static java.util.concurrent.locks.LockSupport.park;
 import static java.util.concurrent.locks.LockSupport.unpark;
 
+import java.time.Clock;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,10 +20,12 @@ import io.quarkus.qlue.item.Item;
  */
 final class Execution {
 
+    private final Clock clock;
     private final Chain chain;
     private final ConcurrentHashMap<ItemId, Item> singles;
     private final ConcurrentHashMap<ItemId, List<Item>> multis;
     private final ConcurrentHashMap<StepInfo, StepContext> contextCache = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<StepId, StepSummary> summaries = new ConcurrentHashMap<>();
     private final Executor executor;
     private final List<Throwable> problems = Collections.synchronizedList(new ArrayList<>());
     private final AtomicBoolean errorReported = new AtomicBoolean();
@@ -31,11 +34,12 @@ final class Execution {
     private volatile boolean done;
 
     Execution(final ExecutionBuilder builder, final Executor executor) {
-        chain = builder.getChain();
-        this.singles = new ConcurrentHashMap<>(builder.getInitialSingle());
-        this.multis = new ConcurrentHashMap<>(builder.getInitialMulti());
+        chain = builder.chain();
+        clock = builder.clock();
+        this.singles = new ConcurrentHashMap<>(builder.initialSingle());
+        this.multis = new ConcurrentHashMap<>(builder.initialMulti());
         this.executor = executor;
-        lastStepCount.set(builder.getChain().getEndStepCount());
+        lastStepCount.set(builder.chain().getEndStepCount());
         if (lastStepCount.get() == 0)
             done = true;
     }
@@ -50,10 +54,16 @@ final class Execution {
 
     void removeStepContext(StepInfo stepInfo, StepContext stepContext) {
         contextCache.remove(stepInfo, stepContext);
+        summaries.put(stepInfo.id(), stepContext.summary());
+    }
+
+    Chain chain() {
+        return chain;
     }
 
     Result run() {
-        final long start = System.nanoTime();
+        Clock clock = this.clock;
+        final Instant start = clock.instant();
         runningThread = Thread.currentThread();
         // run the operation
         final List<StepInfo> startSteps = chain.getStartSteps();
@@ -78,16 +88,16 @@ final class Execution {
             }
             runningThread = null;
         }
+        final Instant end = clock.instant();
         if (errorReported.get()) {
             synchronized (problems) {
-                return new Failure(new ArrayList<>(problems));
+                return new Failure(start, end, new ArrayList<>(problems), summaries);
             }
         }
         if (lastStepCount.get() > 0) {
             throw new IllegalStateException("Extra steps left over");
         }
-        return new Success(singles, multis,
-                max(0, System.nanoTime() - start));
+        return new Success(start, end, singles, multis, summaries);
     }
 
     Executor getExecutor() {
@@ -121,5 +131,9 @@ final class Execution {
             done = true;
             unpark(runningThread);
         }
+    }
+
+    Clock clock() {
+        return clock;
     }
 }

@@ -1,10 +1,10 @@
 package io.quarkus.qlue;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.quarkus.qlue._private.Messages;
@@ -22,14 +22,12 @@ import io.quarkus.qlue.item.SimpleItem;
 public final class Success extends Result {
     private final ConcurrentHashMap<ItemId, Item> simpleItems;
     private final ConcurrentHashMap<ItemId, List<Item>> multiItems;
-    private final long nanos;
 
-    Success(final ConcurrentHashMap<ItemId, Item> simpleItems,
-            final ConcurrentHashMap<ItemId, List<Item>> multiItems,
-            final long nanos) {
+    Success(final Instant start, final Instant end, final ConcurrentHashMap<ItemId, Item> simpleItems,
+            final ConcurrentHashMap<ItemId, List<Item>> multiItems, final Map<StepId, StepSummary> summaries) {
+        super(start, end, summaries);
         this.simpleItems = simpleItems;
         this.multiItems = multiItems;
-        this.nanos = nanos;
     }
 
     /**
@@ -147,31 +145,22 @@ public final class Success extends Result {
     }
 
     /**
-     * Get the amount of elapsed time from the time the operation was initiated to the time it was completed.
-     *
-     * @return the duration
-     */
-    public Duration getDuration() {
-        return Duration.of(nanos, ChronoUnit.NANOS);
-    }
-
-    /**
      * Close all the resultant resources, logging any failures.
      */
     public void closeAll() throws RuntimeException {
         for (Item obj : simpleItems.values()) {
-            if (obj instanceof AutoCloseable)
+            if (obj instanceof AutoCloseable c)
                 try {
-                    ((AutoCloseable) obj).close();
+                    c.close();
                 } catch (Exception e) {
                     Messages.log.closeFailed(e, obj);
                 }
         }
         for (List<? extends Item> list : multiItems.values()) {
             for (Item obj : list) {
-                if (obj instanceof AutoCloseable)
+                if (obj instanceof AutoCloseable c)
                     try {
-                        ((AutoCloseable) obj).close();
+                        c.close();
                     } catch (Exception e) {
                         Messages.log.closeFailed(e, obj);
                     }

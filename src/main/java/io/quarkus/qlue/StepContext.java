@@ -1,8 +1,12 @@
 package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
+import static java.lang.invoke.MethodHandles.lookup;
 
+import java.lang.invoke.ConstantBootstraps;
+import java.lang.invoke.VarHandle;
 import java.time.Duration;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,11 +31,18 @@ import io.smallrye.common.constraint.Assert;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class StepContext {
+    private static final VarHandle stateHandle = ConstantBootstraps.fieldVarHandle(lookup(), "state", VarHandle.class,
+            StepContext.class, State.class);
+
     private final ClassLoader classLoader;
     private final StepInfo stepInfo;
     private final Execution execution;
     private final AtomicInteger dependencies;
-    private volatile boolean running;
+    @SuppressWarnings({ "unused", "FieldMayBeFinal" }) // stateHandle
+    private volatile State state = State.WAITING;
+    private volatile Instant start;
+    private volatile Instant end;
+    private volatile Duration duration;
     private AttachmentKey<?> key1;
     private Object val1;
     private AttachmentKey<?> key2;
@@ -41,7 +52,14 @@ public final class StepContext {
         this.classLoader = classLoader;
         this.stepInfo = stepInfo;
         this.execution = execution;
-        dependencies = new AtomicInteger(stepInfo.getDependencies());
+        dependencies = new AtomicInteger(stepInfo.dependencyCount());
+    }
+
+    /**
+     * {@return the current state of this context}
+     */
+    public State state() {
+        return state;
     }
 
     /**
@@ -157,14 +175,14 @@ public final class StepContext {
         if (ClassItem.class.isAssignableFrom(type)) {
             throw log.namedNeedsArgument(type);
         }
-        if (!running) {
+        if (state != State.RUNNING) {
             throw log.stepNotRunning();
         }
         final ItemId id = new ItemId(type);
         if (id.isMulti()) {
             throw log.cannotMulti(id);
         }
-        if (!stepInfo.getConsumes().contains(id)) {
+        if (!stepInfo.consumes().contains(id)) {
             throw log.undeclaredItem(id);
         }
         return type.cast(execution.getSingles().get(id));
@@ -185,14 +203,14 @@ public final class StepContext {
     public <U, T extends SimpleClassItem<U>> T consume(Class<T> type, Class<? extends U> argument) {
         Assert.checkNotNullParam("type", type);
         Assert.checkNotNullParam("argument", argument);
-        if (!running) {
+        if (state != State.RUNNING) {
             throw log.stepNotRunning();
         }
         final ItemId id = new ItemId(type, argument);
         if (id.isMulti()) {
             throw log.cannotMulti(id);
         }
-        if (!stepInfo.getConsumes().contains(id)) {
+        if (!stepInfo.consumes().contains(id)) {
             throw log.undeclaredItem(id);
         }
         return type.cast(execution.getSingles().get(id));
@@ -215,7 +233,7 @@ public final class StepContext {
         if (ClassItem.class.isAssignableFrom(type)) {
             throw log.namedNeedsArgument(type);
         }
-        if (!running) {
+        if (state != State.RUNNING) {
             throw log.stepNotRunning();
         }
         final ItemId id = new ItemId(type);
@@ -223,7 +241,7 @@ public final class StepContext {
             // can happen if obj changes base class
             throw log.cannotMulti(id);
         }
-        if (!stepInfo.getConsumes().contains(id)) {
+        if (!stepInfo.consumes().contains(id)) {
             throw log.undeclaredItem(id);
         }
         return new ArrayList<>((List<T>) (List) execution.getMultis().getOrDefault(id, Collections.emptyList()));
@@ -246,7 +264,7 @@ public final class StepContext {
     public <U, T extends MultiClassItem<U>> List<T> consumeMulti(Class<T> type, Class<? extends U> argument) {
         Assert.checkNotNullParam("type", type);
         Assert.checkNotNullParam("argument", argument);
-        if (!running) {
+        if (state != State.RUNNING) {
             throw log.stepNotRunning();
         }
         final ItemId id = new ItemId(type, argument);
@@ -254,7 +272,7 @@ public final class StepContext {
             // can happen if obj changes base class
             throw log.cannotMulti(id);
         }
-        if (!stepInfo.getConsumes().contains(id)) {
+        if (!stepInfo.consumes().contains(id)) {
             throw log.undeclaredItem(id);
         }
         return new ArrayList<>((List<T>) (List) execution.getMultis().getOrDefault(id, Collections.emptyList()));
@@ -310,7 +328,7 @@ public final class StepContext {
             throw log.namedNeedsArgument(type);
         }
         final ItemId id = new ItemId(type);
-        return stepInfo.getConsumes().contains(id) && id.isMulti()
+        return stepInfo.consumes().contains(id) && id.isMulti()
                 ? !execution.getMultis().getOrDefault(id, Collections.emptyList()).isEmpty()
                 : execution.getSingles().containsKey(id);
     }
@@ -328,7 +346,7 @@ public final class StepContext {
         Assert.checkNotNullParam("type", type);
         Assert.checkNotNullParam("argument", argument);
         final ItemId id = new ItemId(type, argument);
-        return stepInfo.getConsumes().contains(id) && id.isMulti()
+        return stepInfo.consumes().contains(id) && id.isMulti()
                 ? !execution.getMultis().getOrDefault(id, Collections.emptyList()).isEmpty()
                 : execution.getSingles().containsKey(id);
     }
@@ -373,6 +391,50 @@ public final class StepContext {
      */
     public void markAsFailed() {
         execution.setErrorReported();
+    }
+
+    /**
+     * {@return the start instant of this step}
+     *
+     * @throws IllegalStateException if the step has not yet started
+     */
+    public Instant start() {
+        Instant start = this.start;
+        if (start == null) {
+            throw log.stepNotStarted(stepInfo.id());
+        }
+        return start;
+    }
+
+    /**
+     * {@return the end instant of this step}
+     *
+     * @throws IllegalStateException if the step has not yet completed
+     */
+    public Instant end() {
+        Instant end = this.end;
+        if (end == null) {
+            throw log.stepNotEnded(stepInfo.id());
+        }
+        return end;
+    }
+
+    /**
+     * Get the duration of this step.
+     *
+     * @return the duration (not {@code null})
+     * @throws IllegalStateException if the step has not yet completed
+     */
+    public Duration duration() {
+        Duration duration = this.duration;
+        if (duration == null) {
+            duration = this.duration = max(Duration.between(start(), end()), Duration.ZERO);
+        }
+        return duration;
+    }
+
+    private static Duration max(Duration a, Duration b) {
+        return a.compareTo(b) > 0 ? a : b;
     }
 
     /**
@@ -490,16 +552,16 @@ public final class StepContext {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void doProduce(ItemId id, Item value) {
-        if (!running) {
+        if (state != State.RUNNING) {
             throw log.stepNotRunning();
         }
-        if (!stepInfo.getProduces().contains(id)) {
+        if (!stepInfo.produces().contains(id)) {
             throw log.undeclaredItem(id);
         }
         if (id.isMulti()) {
             final List<Item> list = execution.getMultis().computeIfAbsent(id, x -> new ArrayList<>());
             synchronized (list) {
-                if (Comparable.class.isAssignableFrom(id.getType())) {
+                if (Comparable.class.isAssignableFrom(id.itemType())) {
                     int pos = Collections.binarySearch((List) list, value);
                     if (pos < 0)
                         pos = -(pos + 1);
@@ -517,7 +579,7 @@ public final class StepContext {
 
     void depFinished() {
         final int remaining = dependencies.decrementAndGet();
-        log.tracef("Dependency of \"%2$s\" finished; %1$d remaining", remaining, stepInfo.getStep());
+        log.tracef("Dependency of \"%2$s\" finished; %1$d remaining", remaining, stepInfo.step());
         if (remaining == 0) {
             execution.getExecutor().execute(this::run);
         }
@@ -526,38 +588,96 @@ public final class StepContext {
     void run() {
         final Execution execution = this.execution;
         final StepInfo stepInfo = this.stepInfo;
-        final Consumer<StepContext> step = stepInfo.getStep();
-        final long start = System.nanoTime();
-        log.startingStep(step);
+        final Consumer<StepContext> step = stepInfo.step();
         try {
-            if (!execution.isErrorReported()) {
-                running = true;
+            if (execution.isErrorReported()) {
+                this.start = this.end = execution.clock().instant();
+                casStateRequired(State.WAITING, State.SKIPPED);
+                log.skippedStep(step);
+            } else {
+                log.startingStep(step);
+                casStateRequired(State.WAITING, State.RUNNING);
+                this.start = execution.clock().instant();
                 ClassLoader old = Thread.currentThread().getContextClassLoader();
+                Thread.currentThread().setContextClassLoader(classLoader);
                 try {
-                    Thread.currentThread().setContextClassLoader(classLoader);
                     step.accept(this);
+                    casStateRequired(State.RUNNING, State.COMPLETE);
+                    this.end = execution.clock().instant();
                 } catch (Throwable t) {
+                    casStateRequired(State.RUNNING, State.FAILED);
+                    this.end = execution.clock().instant();
                     log.stepFailed(t, step);
                     execution.getProblems().add(t);
                     execution.setErrorReported();
                 } finally {
-                    running = false;
                     Thread.currentThread().setContextClassLoader(old);
+                    if (log.isTraceEnabled()) {
+                        log.finishingStep(step, duration());
+                    }
                 }
             }
         } finally {
-            if (log.isTraceEnabled()) {
-                log.finishingStep(step, Duration.of(System.nanoTime() - start, ChronoUnit.NANOS));
-            }
             execution.removeStepContext(stepInfo, this);
         }
-        final Set<StepInfo> dependents = stepInfo.getDependents();
+        final Set<StepId> dependents = stepInfo.dependents();
         if (!dependents.isEmpty()) {
-            for (StepInfo info : dependents) {
-                execution.getStepContext(info).depFinished();
+            for (StepId id : dependents) {
+                execution.getStepContext(execution.chain().stepInfo(id)).depFinished();
             }
         } else {
             execution.depFinished();
+        }
+    }
+
+    private void casStateRequired(State expect, State update) {
+        if (!stateHandle.compareAndSet(this, expect, update)) {
+            throw new IllegalStateException("Unexpected state: " + expect);
+        }
+    }
+
+    StepSummary summary() {
+        return new StepSummary(stepInfo.id(), state, start, end);
+    }
+
+    /**
+     * The current state of execution for this context.
+     */
+    public enum State {
+        /**
+         * The context is awaiting execution.
+         */
+        WAITING(false),
+        /**
+         * The step is currently executing.
+         * During this state, values may be produced and consumed.
+         */
+        RUNNING(false),
+        /**
+         * The step has completed.
+         */
+        COMPLETE(true),
+        /**
+         * The step has failed.
+         */
+        FAILED(true),
+        /**
+         * The step has been skipped due to a prior step's failure.
+         */
+        SKIPPED(true),
+        ;
+
+        private final boolean finished;
+
+        State(final boolean finished) {
+            this.finished = finished;
+        }
+
+        /**
+         * {@return <code>true</code> if this state is a terminal state, or <code>false</code> if it is not}
+         */
+        public boolean finished() {
+            return finished;
         }
     }
 }

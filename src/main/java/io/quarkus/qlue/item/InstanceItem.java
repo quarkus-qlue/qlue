@@ -3,10 +3,12 @@ package io.quarkus.qlue.item;
 import io.smallrye.common.constraint.Assert;
 
 /**
- * An item which represents a class that contains zero or more steps and is instantiated by the chain
+ * An item which represents an instance of a class that contains zero or more steps and is instantiated by the chain
  * execution.
+ * <p>
+ * The type argument is {@code Object}, because there are no upper-bound restrictions on the type of the instance.
  */
-public final class StepClassItem extends SimpleClassItem<Object> implements AutoCloseable {
+public final class InstanceItem extends SimpleClassItem<Object> implements AutoCloseable {
     private final Object instance;
 
     /**
@@ -14,7 +16,7 @@ public final class StepClassItem extends SimpleClassItem<Object> implements Auto
      *
      * @param instance the step class instance (must not be {@code null})
      */
-    public StepClassItem(final Object instance) {
+    public InstanceItem(final Object instance) {
         this.instance = Assert.checkNotNullParam("instance", instance);
     }
 
@@ -23,7 +25,7 @@ public final class StepClassItem extends SimpleClassItem<Object> implements Auto
      *
      * @return the step class instance
      */
-    public Object getInstance() {
+    public Object instance() {
         return instance;
     }
 
@@ -34,8 +36,8 @@ public final class StepClassItem extends SimpleClassItem<Object> implements Auto
      */
     public void close() throws Exception {
         Object instance = this.instance;
-        if (instance instanceof AutoCloseable) {
-            ((AutoCloseable) instance).close();
+        if (instance instanceof AutoCloseable c) {
+            c.close();
         }
     }
 }
