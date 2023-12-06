@@ -1,18 +1,10 @@
 package io.quarkus.qlue;
 
 /**
+ *
  */
-final class Produce {
-    private final StepBuilder stepBuilder;
-    private final ItemId itemId;
-    private final Constraint constraint;
-    private final ProduceFlags flags;
-
-    Produce(final StepBuilder stepBuilder, final ItemId itemId, final Constraint constraint, final ProduceFlags flags) {
-        this.stepBuilder = stepBuilder;
-        this.itemId = itemId;
-        this.constraint = constraint;
-        this.flags = flags;
+record Produce(StepBuilder stepBuilder, ItemId itemId, Constraint constraint, ProduceFlags flags) {
+    Produce {
     }
 
     Produce combine(final Constraint constraint, final ProduceFlags flags) {
@@ -33,23 +25,15 @@ final class Produce {
         return new Produce(stepBuilder, itemId, outputConstraint, outputFlags);
     }
 
-    StepBuilder getStepBuilder() {
-        return stepBuilder;
-    }
-
-    ItemId getItemId() {
-        return itemId;
-    }
-
-    Constraint getConstraint() {
-        return constraint;
-    }
-
-    ProduceFlags getFlags() {
-        return flags;
-    }
-
     boolean isOverridable() {
         return flags.contains(ProduceFlag.OVERRIDABLE);
+    }
+
+    boolean isReal() {
+        return constraint == Constraint.REAL;
+    }
+
+    StepId stepId() {
+        return stepBuilder.id();
     }
 }

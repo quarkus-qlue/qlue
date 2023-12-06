@@ -1,22 +1,10 @@
 package io.quarkus.qlue;
 
 /**
+ *
  */
-final class Consume {
-    private final StepBuilder stepBuilder;
-    private final ItemId itemId;
-    private final Constraint constraint;
-    private final ConsumeFlags flags;
-
-    Consume(final StepBuilder stepBuilder, final ItemId itemId, final Constraint constraint, final ConsumeFlags flags) {
-        this.stepBuilder = stepBuilder;
-        this.itemId = itemId;
-        this.constraint = constraint;
-        this.flags = flags;
-    }
-
-    ConsumeFlags getFlags() {
-        return flags;
+record Consume(StepBuilder stepBuilder, ItemId itemId, Constraint constraint, ConsumeFlags flags) {
+    Consume {
     }
 
     Consume combine(final Constraint constraint, final ConsumeFlags flags) {
@@ -29,7 +17,7 @@ final class Consume {
         return new Consume(stepBuilder, itemId, outputConstraint, outputFlags);
     }
 
-    Constraint getConstraint() {
-        return constraint;
+    StepId stepId() {
+        return stepBuilder.id();
     }
 }

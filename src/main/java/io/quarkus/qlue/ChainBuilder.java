@@ -23,8 +23,8 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import io.quarkus.qlue.item.ClassItem;
+import io.quarkus.qlue.item.InstanceItem;
 import io.quarkus.qlue.item.Item;
-import io.quarkus.qlue.item.StepClassItem;
 import io.smallrye.common.constraint.Assert;
 
 /**
@@ -185,6 +185,7 @@ public final class ChainBuilder {
                 }
                 SwitchableConsumer<StepContext> cons = new SwitchableConsumer<>(method.toString());
                 StepBuilder stepBuilder = addRawStep(cons);
+                stepBuilder.id(new MethodStepId(new InstanceStepId(obj), method));
                 Consumer<StepContext> methodHandler = injectionMapper.handleStepMethod(stepBuilder, method, lookup);
                 int cnt = method.getParameterCount();
                 List<Function<StepContext, Object>> methodParamVals = new ArrayList<>(cnt);
@@ -222,7 +223,7 @@ public final class ChainBuilder {
     /**
      * Add all of the steps defined in the given class. The construction of the class itself is
      * added as a step which consumes the injected dependencies of the class and produces the
-     * corresponding {@link StepClassItem}. Each recognized step method is added as a step
+     * corresponding {@link InstanceItem}. Each recognized step method is added as a step
      * which consumes the {@code StepClassItem} and the injected dependencies of the method, and subsequently invokes
      * the method, producing any results that are produced by the method.
      *
@@ -237,7 +238,7 @@ public final class ChainBuilder {
     /**
      * Add all of the steps defined in the given class. The construction of the class itself is
      * added as a step which consumes the injected dependencies of the class and produces the
-     * corresponding {@link StepClassItem}. Each recognized step method is added as a step
+     * corresponding {@link InstanceItem}. Each recognized step method is added as a step
      * which consumes the {@code StepClassItem} and the injected dependencies of the method, and subsequently invokes
      * the method, producing any results that are produced by the method.
      *
@@ -251,7 +252,7 @@ public final class ChainBuilder {
         SwitchableConsumer<StepContext> cons = new SwitchableConsumer<>(clazz.toString());
         // this is the step builder for the class producer
         StepBuilder classStepBuilder = addRawStep(cons);
-        classStepBuilder.produces(StepClassItem.class, clazz);
+        classStepBuilder.produces(InstanceItem.class, clazz);
         // get the overall class handler
         Consumer<StepContext> classHandler = injectionMapper.handleClass(classStepBuilder, clazz, lookup);
         MethodHandle mh = null;
@@ -268,6 +269,7 @@ public final class ChainBuilder {
             if (mh != null) {
                 throw log.multipleConstructors(clazz);
             }
+            classStepBuilder.id(new MethodStepId(constructor));
             mh = tmp;
         }
         // no eligible constructor found
@@ -333,7 +335,7 @@ public final class ChainBuilder {
                 }
                 classFinish.accept(stepContext);
                 // and we're set
-                stepContext.produce(clazz, new StepClassItem(instance));
+                stepContext.produce(clazz, new InstanceItem(instance));
             }
         });
         classStepBuilder.build();
@@ -347,7 +349,8 @@ public final class ChainBuilder {
                 method.setAccessible(true);
                 cons = new SwitchableConsumer<>(method.toString());
                 StepBuilder stepBuilder = addRawStep(cons);
-                stepBuilder.consumes(StepClassItem.class, clazz);
+                stepBuilder.id(new MethodStepId(method));
+                stepBuilder.consumes(InstanceItem.class, clazz);
                 Consumer<StepContext> methodHandler = injectionMapper.handleStepMethod(stepBuilder, method, lookup);
                 cnt = method.getParameterCount();
                 List<Function<StepContext, Object>> methodParamVals = new ArrayList<>(cnt);
@@ -357,8 +360,8 @@ public final class ChainBuilder {
                 BiConsumer<StepContext, Object> retHandler = injectionMapper.handleReturnValue(stepBuilder, method, lookup);
                 cons.setDelegate(new Consumer<StepContext>() {
                     public void accept(final StepContext stepContext) {
-                        StepClassItem item = stepContext.consume(StepClassItem.class, clazz);
-                        Object instance = item.getInstance();
+                        InstanceItem item = stepContext.consume(InstanceItem.class, clazz);
+                        Object instance = item.instance();
                         methodHandler.accept(stepContext);
                         final int cnt = methodParamVals.size();
                         final Object[] args = new Object[cnt];

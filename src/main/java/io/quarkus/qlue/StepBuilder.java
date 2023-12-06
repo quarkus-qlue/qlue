@@ -26,10 +26,21 @@ public final class StepBuilder {
     private Object val1;
     private AttachmentKey<?> key2;
     private Object val2;
+    private StepId id;
 
     StepBuilder(final ChainBuilder chainBuilder, final Consumer<StepContext> step) {
         this.chainBuilder = chainBuilder;
         this.step = step;
+    }
+
+    /**
+     * Set the identifier for this step.
+     * If none is given, the step will be given a unique instance of {@link AnonymousStepId} as its identifier.
+     *
+     * @param id the identifier (must not be {@code null})
+     */
+    public void id(final StepId id) {
+        this.id = Assert.checkNotNullParam("id", id);
     }
 
     /**
@@ -501,19 +512,19 @@ public final class StepBuilder {
 
     // -- //
 
-    Consumer<StepContext> getStep() {
+    Consumer<StepContext> step() {
         return step;
     }
 
     private void addConsumes(final ItemId itemId, final Constraint constraint, final ConsumeFlags flags) {
         Assert.checkNotNullParam("flags", flags);
         consumes.compute(itemId,
-                (id, c) -> c == null ? new Consume(this, itemId, constraint, flags) : c.combine(constraint, flags));
+                (id, c) -> c == null ? new Consume(this, id, constraint, flags) : c.combine(constraint, flags));
     }
 
     private void addProduces(final ItemId itemId, final Constraint constraint, final ProduceFlags flags) {
         produces.compute(itemId,
-                (id, p) -> p == null ? new Produce(this, itemId, constraint, flags) : p.combine(constraint, flags));
+                (id, p) -> p == null ? new Produce(this, id, constraint, flags) : p.combine(constraint, flags));
     }
 
     Map<ItemId, Consume> getConsumes() {
@@ -524,15 +535,23 @@ public final class StepBuilder {
         return produces;
     }
 
-    Set<ItemId> getRealConsumes() {
+    Set<ItemId> realConsumes() {
         final HashMap<ItemId, Consume> map = new HashMap<>(consumes);
-        map.entrySet().removeIf(e -> e.getValue().getConstraint() == Constraint.ORDER_ONLY);
+        map.entrySet().removeIf(e -> e.getValue().constraint() == Constraint.ORDER_ONLY);
         return map.keySet();
     }
 
-    Set<ItemId> getRealProduces() {
+    StepId id() {
+        StepId id = this.id;
+        if (id == null) {
+            id = this.id = new AnonymousStepId();
+        }
+        return id;
+    }
+
+    Set<ItemId> realProduces() {
         final HashMap<ItemId, Produce> map = new HashMap<>(produces);
-        map.entrySet().removeIf(e -> e.getValue().getConstraint() == Constraint.ORDER_ONLY);
+        map.entrySet().removeIf(e -> e.getValue().constraint() == Constraint.ORDER_ONLY);
         return map.keySet();
     }
 

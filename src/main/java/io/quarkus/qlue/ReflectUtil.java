@@ -2,14 +2,11 @@ package io.quarkus.qlue;
 
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Parameter;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.lang.reflect.UndeclaredThrowableException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -24,16 +21,16 @@ final class ReflectUtil {
 
     public static boolean rawTypeIs(Type type, Class<?> clazz) {
         return type instanceof Class<?> && clazz == type
-                || type instanceof ParameterizedType && ((ParameterizedType) type).getRawType() == clazz
-                || type instanceof GenericArrayType && clazz.isArray()
-                        && rawTypeIs(((GenericArrayType) type).getGenericComponentType(), clazz.getComponentType());
+                || type instanceof ParameterizedType pt && pt.getRawType() == clazz
+                || type instanceof GenericArrayType gat && clazz.isArray()
+                        && rawTypeIs(gat.getGenericComponentType(), clazz.getComponentType());
     }
 
     public static boolean rawTypeExtends(Type type, Class<?> clazz) {
         return type instanceof Class<?> && clazz.isAssignableFrom((Class<?>) type)
-                || type instanceof ParameterizedType && rawTypeExtends(((ParameterizedType) type).getRawType(), clazz)
-                || type instanceof GenericArrayType
-                        && rawTypeExtends(((GenericArrayType) type).getGenericComponentType(), clazz.getComponentType());
+                || type instanceof ParameterizedType pt && rawTypeExtends(pt.getRawType(), clazz)
+                || type instanceof GenericArrayType gat
+                        && rawTypeExtends(gat.getGenericComponentType(), clazz.getComponentType());
     }
 
     public static boolean isListOf(Type type, Class<?> nestedType) {
@@ -63,12 +60,12 @@ final class ReflectUtil {
     }
 
     public static Class<?> rawTypeOf(final Type type) {
-        if (type instanceof Class<?>) {
-            return (Class<?>) type;
-        } else if (type instanceof ParameterizedType) {
-            return rawTypeOf(((ParameterizedType) type).getRawType());
-        } else if (type instanceof GenericArrayType) {
-            return Array.newInstance(rawTypeOf(((GenericArrayType) type).getGenericComponentType()), 0).getClass();
+        if (type instanceof Class<?> c) {
+            return c;
+        } else if (type instanceof ParameterizedType pt) {
+            return rawTypeOf(pt.getRawType());
+        } else if (type instanceof GenericArrayType gat) {
+            return Array.newInstance(rawTypeOf(gat.getGenericComponentType()), 0).getClass();
         } else {
             throw new IllegalArgumentException("Type has no raw type class: " + type);
         }
@@ -93,8 +90,8 @@ final class ReflectUtil {
     }
 
     public static Type typeOfParameter(final Type type, final int paramIdx) {
-        if (type instanceof ParameterizedType) {
-            return ((ParameterizedType) type).getActualTypeArguments()[paramIdx];
+        if (type instanceof ParameterizedType pt) {
+            return pt.getActualTypeArguments()[paramIdx];
         } else {
             throw new IllegalArgumentException("Type is not parameterized: " + type);
         }
@@ -102,34 +99,6 @@ final class ReflectUtil {
 
     public static Class<?> rawTypeOfParameter(final Type type, final int paramIdx) {
         return rawTypeOf(typeOfParameter(type, paramIdx));
-    }
-
-    public static void setFieldVal(Field field, Object obj, Object value) {
-        try {
-            field.set(obj, value);
-        } catch (IllegalAccessException e) {
-            throw toError(e);
-        }
-    }
-
-    public static <T> T newInstance(Class<T> clazz) {
-        try {
-            return clazz.getConstructor().newInstance();
-        } catch (InstantiationException e) {
-            throw toError(e);
-        } catch (InvocationTargetException e) {
-            try {
-                throw e.getCause();
-            } catch (RuntimeException | Error e2) {
-                throw e2;
-            } catch (Throwable t) {
-                throw new UndeclaredThrowableException(t);
-            }
-        } catch (NoSuchMethodException e) {
-            throw toError(e);
-        } catch (IllegalAccessException e) {
-            throw toError(e);
-        }
     }
 
     public static InstantiationError toError(final InstantiationException e) {
@@ -156,24 +125,14 @@ final class ReflectUtil {
         return error;
     }
 
-    public static UndeclaredThrowableException unwrapInvocationTargetException(InvocationTargetException original) {
-        try {
-            throw original.getCause();
-        } catch (RuntimeException | Error e) {
-            throw e;
-        } catch (Throwable t) {
-            return new UndeclaredThrowableException(t);
-        }
-    }
-
     public static IllegalArgumentException reportError(AnnotatedElement e, String fmt, Object... args) {
-        if (e instanceof Member) {
+        if (e instanceof Member m) {
             return new IllegalArgumentException(
-                    String.format(fmt, args) + " at " + e + " of " + ((Member) e).getDeclaringClass());
-        } else if (e instanceof Parameter) {
+                    String.format(fmt, args) + " at " + e + " of " + m.getDeclaringClass());
+        } else if (e instanceof Parameter p) {
             return new IllegalArgumentException(
-                    String.format(fmt, args) + " at " + e + " of " + ((Parameter) e).getDeclaringExecutable() + " of "
-                            + ((Parameter) e).getDeclaringExecutable().getDeclaringClass());
+                    String.format(fmt, args) + " at " + e + " of " + p.getDeclaringExecutable() + " of "
+                            + p.getDeclaringExecutable().getDeclaringClass());
         } else {
             return new IllegalArgumentException(String.format(fmt, args) + " at " + e);
         }

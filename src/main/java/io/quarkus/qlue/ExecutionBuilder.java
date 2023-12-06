@@ -2,6 +2,7 @@ package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import io.smallrye.common.constraint.Assert;
  * @author <a href="mailto:david.lloyd@redhat.com">David M. Lloyd</a>
  */
 public final class ExecutionBuilder {
+    private Clock clock = Clock.systemUTC();
     private final Chain chain;
     private final Map<ItemId, Item> initialSingle;
     private final Map<ItemId, ArrayList<Item>> initialMulti;
@@ -110,7 +112,7 @@ public final class ExecutionBuilder {
         }
         if (id.isMulti()) {
             final List<Item> list = initialMulti.computeIfAbsent(id, x -> new ArrayList<>());
-            if (Comparable.class.isAssignableFrom(id.getType())) {
+            if (Comparable.class.isAssignableFrom(id.itemType())) {
                 int pos = Collections.binarySearch((List) list, value);
                 if (pos < 0)
                     pos = -(pos + 1);
@@ -125,15 +127,19 @@ public final class ExecutionBuilder {
         }
     }
 
-    Map<ItemId, Item> getInitialSingle() {
+    Map<ItemId, Item> initialSingle() {
         return initialSingle;
     }
 
-    Map<ItemId, ArrayList<Item>> getInitialMulti() {
+    Map<ItemId, ArrayList<Item>> initialMulti() {
         return initialMulti;
     }
 
-    Chain getChain() {
+    Chain chain() {
         return chain;
+    }
+
+    Clock clock() {
+        return clock;
     }
 }

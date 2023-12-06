@@ -12,8 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.qlue.annotation.ForClass;
 import io.quarkus.qlue.annotation.Step;
+import io.quarkus.qlue.item.InstanceItem;
 import io.quarkus.qlue.item.SimpleItem;
-import io.quarkus.qlue.item.StepClassItem;
 
 /**
  *
@@ -84,8 +84,8 @@ public class ReflectTests {
 
     public static final class InjectSelf {
         @Test
-        public void checkItOut(@ForClass(InjectSelf.class) StepClassItem item) {
-            assertSame(this, item.getInstance());
+        public void checkItOut(@ForClass(InjectSelf.class) InstanceItem item) {
+            assertSame(this, item.instance());
         }
     }
 
@@ -93,12 +93,12 @@ public class ReflectTests {
     public void testInjectSelf() throws ChainBuildException {
         ChainBuilder builder = Chain.builder();
         builder.addStepClass(InjectSelf.class);
-        builder.addFinal(StepClassItem.class, InjectSelf.class);
+        builder.addFinal(InstanceItem.class, InjectSelf.class);
         Chain chain = builder.build();
         ExecutionBuilder executionBuilder = chain.createExecutionBuilder();
         final Result result = executionBuilder.execute(Runnable::run);
         assertTrue(result.isSuccess());
         Success success = result.asSuccess();
-        assertNotNull(success.consume(StepClassItem.class, InjectSelf.class));
+        assertNotNull(success.consume(InstanceItem.class, InjectSelf.class));
     }
 }
