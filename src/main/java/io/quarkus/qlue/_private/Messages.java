@@ -130,6 +130,9 @@ public interface Messages extends BasicLogger {
     @Message(id = 34, value = "No step found with identifier %s")
     NoSuchElementException noSuchStep(StepId stepId);
 
+    @Message(id = 35, value = "Step produces nothing: %s")
+    IllegalArgumentException stepProducesNothing(StepId stepId);
+
     // debug logs
 
     @LogMessage(level = Logger.Level.DEBUG)

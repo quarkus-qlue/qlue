@@ -404,6 +404,9 @@ public final class StepBuilder {
      */
     public ChainBuilder build() {
         final ChainBuilder chainBuilder = this.chainBuilder;
+        if (produces.isEmpty()) {
+            throw log.stepProducesNothing(id);
+        }
         chainBuilder.addStep(this);
         return chainBuilder;
     }
