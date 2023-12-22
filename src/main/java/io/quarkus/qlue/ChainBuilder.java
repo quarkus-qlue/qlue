@@ -7,7 +7,6 @@ import static java.lang.invoke.MethodHandles.lookup;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -346,7 +345,12 @@ public final class ChainBuilder {
                 continue;
             }
             if (injectionMapper.isStepMethod(method, lookup)) {
-                method.setAccessible(true);
+                MethodHandle invoker;
+                try {
+                    invoker = lookup.unreflect(method);
+                } catch (IllegalAccessException e) {
+                    throw ReflectUtil.toError(e);
+                }
                 cons = new SwitchableConsumer<>(method.toString());
                 StepBuilder stepBuilder = addRawStep(cons);
                 stepBuilder.id(new MethodStepId(method));
@@ -364,14 +368,15 @@ public final class ChainBuilder {
                         Object instance = item.instance();
                         methodHandler.accept(stepContext);
                         final int cnt = methodParamVals.size();
-                        final Object[] args = new Object[cnt];
+                        final Object[] args = new Object[cnt + 1];
+                        args[0] = instance;
                         for (int i = 0; i < cnt; i++) {
-                            args[i] = methodParamVals.get(i).apply(stepContext);
+                            args[i + 1] = methodParamVals.get(i).apply(stepContext);
                         }
                         Object retVal;
                         try {
-                            retVal = method.invoke(instance, args);
-                        } catch (IllegalAccessException | InvocationTargetException e) {
+                            retVal = invoker.invokeWithArguments(args);
+                        } catch (Throwable e) {
                             log.failedToInvokeMethod(method, e);
                             stepContext.addProblem(e);
                             return;
