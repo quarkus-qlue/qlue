@@ -5,7 +5,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.time.Duration;
-import java.util.function.Consumer;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
@@ -15,7 +16,8 @@ import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
 
 import io.quarkus.qlue.ChainBuildException;
-import io.quarkus.qlue.StepContext;
+import io.quarkus.qlue.ItemId;
+import io.quarkus.qlue.StepId;
 
 @MessageLogger(projectCode = "QLUE", length = 4)
 public interface Messages extends BasicLogger {
@@ -34,11 +36,11 @@ public interface Messages extends BasicLogger {
     @Message(id = 4, value = "Closing resource \"%s\" failed")
     void closeFailed(@Cause Exception e, Object obj);
 
-    @Message(id = 5, value = "Item %s cannot be produced here (it is an initial resource) (%s)")
-    ChainBuildException cannotProduceInitialResource(Object itemId, Consumer<StepContext> step);
+    @Message(id = 5, value = "Item %s cannot be produced here (it is an initial resource): %s")
+    ChainBuildException cannotProduceInitialResource(Object itemId, List<StepId> step);
 
-    @Message(id = 6, value = "Multiple producers of item %s (%s)")
-    ChainBuildException multipleProducers(Object id, Consumer<StepContext> step);
+    @Message(id = 6, value = "Multiple producers of item %s: %s")
+    ChainBuildException multipleProducers(Object id, List<StepId> step);
 
     @Message(id = 7, value = "No producers for required item %s")
     ChainBuildException noProducers(Object id);
@@ -76,10 +78,10 @@ public interface Messages extends BasicLogger {
     @Message(id = 18, value = "No rule to consume objects of %s")
     IllegalArgumentException cannotConsume(Class<?> clazz);
 
-    @Message(id = 19, value = "Multiple eligible constructors present on step %s")
+    @Message(id = 19, value = "Multiple eligible, accessible constructors are present on step %s")
     IllegalArgumentException multipleConstructors(Class<?> clazz);
 
-    @Message(id = 20, value = "No eligible constructor present on step %s")
+    @Message(id = 20, value = "No eligible, accessible constructor present on step %s")
     IllegalArgumentException noConstructor(Class<?> clazz);
 
     @LogMessage(level = Logger.Level.ERROR)
@@ -88,7 +90,7 @@ public interface Messages extends BasicLogger {
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 22, value = "Failed to write to field %s")
-    void failedToSetField(Field field, @Cause Exception e);
+    void failedToSetField(Field field, @Cause Throwable e);
 
     @LogMessage(level = Logger.Level.ERROR)
     @Message(id = 23, value = "Failed to invoke method %s")
@@ -110,6 +112,24 @@ public interface Messages extends BasicLogger {
     @Message(id = 28, value = "No public constructor available on %s")
     void nonPublicConstructor(Class<?> clazz);
 
+    @Message(id = 29, value = "Cannot access field `%s` for writing from %s")
+    IllegalArgumentException notAccessible(Field field, Class<?> fromClass, @Cause IllegalAccessException e);
+
+    @Message(id = 30, value = "No item argument exists for %s")
+    NoSuchElementException noItemArgument(ItemId itemId);
+
+    @Message(id = 31, value = "Incorrect item type for %s (expected %s, but was actually %s)")
+    ClassCastException wrongItemArgumentType(ItemId itemId, Class<?> expected, Class<?> actual);
+
+    @Message(id = 32, value = "Step %s not yet started")
+    IllegalStateException stepNotStarted(StepId id);
+
+    @Message(id = 33, value = "Step %s not yet completed")
+    IllegalStateException stepNotEnded(StepId id);
+
+    @Message(id = 34, value = "No step found with identifier %s")
+    NoSuchElementException noSuchStep(StepId stepId);
+
     // debug logs
 
     @LogMessage(level = Logger.Level.DEBUG)
@@ -125,6 +145,10 @@ public interface Messages extends BasicLogger {
     @LogMessage(level = Logger.Level.TRACE)
     @Message(value = "Finished step %s in %s")
     void finishingStep(Object step, Duration duration);
+
+    @LogMessage(level = Logger.Level.TRACE)
+    @Message(value = "Skipped step %s due to dependency failure")
+    void skippedStep(Object step);
 
     @LogMessage(level = Logger.Level.TRACE)
     @Message(value = "Step completed; %d remaining")

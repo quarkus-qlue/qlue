@@ -2,7 +2,7 @@ package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
 import static java.lang.invoke.MethodHandles.Lookup;
-import static java.lang.invoke.MethodHandles.publicLookup;
+import static java.lang.invoke.MethodHandles.lookup;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
@@ -13,19 +13,18 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 import io.quarkus.qlue.item.ClassItem;
+import io.quarkus.qlue.item.InstanceItem;
 import io.quarkus.qlue.item.Item;
-import io.quarkus.qlue.item.StepClassItem;
 import io.smallrye.common.constraint.Assert;
 
 /**
@@ -149,13 +148,13 @@ public final class ChainBuilder {
      * Add all of the steps defined in the given object's class. The given object instance is used as-is.
      * Each recognized step method is added as a step which invokes the method, producing any results that are produced
      * by the method.
-     * Step methods must be {@code public}.
+     * Step methods must be {@code public} or accessible from this module.
      *
      * @param obj the step object to add (must not be {@code null})
      * @return this builder
      */
     public ChainBuilder addStepObject(Object obj) {
-        return addStepObject(obj, publicLookup());
+        return addStepObject(obj, lookup());
     }
 
     /**
@@ -186,6 +185,7 @@ public final class ChainBuilder {
                 }
                 SwitchableConsumer<StepContext> cons = new SwitchableConsumer<>(method.toString());
                 StepBuilder stepBuilder = addRawStep(cons);
+                stepBuilder.id(new MethodStepId(new InstanceStepId(obj), method));
                 Consumer<StepContext> methodHandler = injectionMapper.handleStepMethod(stepBuilder, method, lookup);
                 int cnt = method.getParameterCount();
                 List<Function<StepContext, Object>> methodParamVals = new ArrayList<>(cnt);
@@ -223,7 +223,7 @@ public final class ChainBuilder {
     /**
      * Add all of the steps defined in the given class. The construction of the class itself is
      * added as a step which consumes the injected dependencies of the class and produces the
-     * corresponding {@link StepClassItem}. Each recognized step method is added as a step
+     * corresponding {@link InstanceItem}. Each recognized step method is added as a step
      * which consumes the {@code StepClassItem} and the injected dependencies of the method, and subsequently invokes
      * the method, producing any results that are produced by the method.
      *
@@ -232,13 +232,13 @@ public final class ChainBuilder {
      * @return this builder
      */
     public <T> ChainBuilder addStepClass(Class<T> clazz) {
-        return addStepClass(clazz, publicLookup());
+        return addStepClass(clazz, lookup());
     }
 
     /**
      * Add all of the steps defined in the given class. The construction of the class itself is
      * added as a step which consumes the injected dependencies of the class and produces the
-     * corresponding {@link StepClassItem}. Each recognized step method is added as a step
+     * corresponding {@link InstanceItem}. Each recognized step method is added as a step
      * which consumes the {@code StepClassItem} and the injected dependencies of the method, and subsequently invokes
      * the method, producing any results that are produced by the method.
      *
@@ -252,7 +252,7 @@ public final class ChainBuilder {
         SwitchableConsumer<StepContext> cons = new SwitchableConsumer<>(clazz.toString());
         // this is the step builder for the class producer
         StepBuilder classStepBuilder = addRawStep(cons);
-        classStepBuilder.produces(StepClassItem.class, clazz);
+        classStepBuilder.produces(InstanceItem.class, clazz);
         // get the overall class handler
         Consumer<StepContext> classHandler = injectionMapper.handleClass(classStepBuilder, clazz, lookup);
         MethodHandle mh = null;
@@ -269,6 +269,7 @@ public final class ChainBuilder {
             if (mh != null) {
                 throw log.multipleConstructors(clazz);
             }
+            classStepBuilder.id(new MethodStepId(constructor));
             mh = tmp;
         }
         // no eligible constructor found
@@ -283,16 +284,31 @@ public final class ChainBuilder {
             ctorParamVals.add(injectionMapper.handleParameter(classStepBuilder, ctor, i, lookup));
         }
         // check out each field
-        Map<Field, Function<StepContext, Object>> fieldVals = new HashMap<>();
-        for (Field field : clazz.getDeclaredFields()) {
-            int mods = field.getModifiers();
-            if (Modifier.isFinal(mods) || Modifier.isStatic(mods)) {
-                // skip it
-                continue;
-            }
-            field.setAccessible(true);
-            fieldVals.put(field, injectionMapper.handleField(classStepBuilder, field, lookup));
-        }
+        Field[] declaredFields = clazz.getDeclaredFields();
+        List<BiConsumer<Object, StepContext>> fieldInjections = Stream.of(declaredFields)
+                .filter(field -> {
+                    int mods = field.getModifiers();
+                    return !Modifier.isFinal(mods) && !Modifier.isStatic(mods);
+                })
+                .map(field -> {
+                    MethodHandle setter;
+                    try {
+                        setter = lookup.unreflectSetter(field);
+                    } catch (IllegalAccessException e) {
+                        throw log.notAccessible(field, lookup.lookupClass(), e);
+                    }
+                    Function<StepContext, Object> fn = injectionMapper.handleField(classStepBuilder, field, lookup);
+                    return (BiConsumer<Object, StepContext>) (instance, ctxt) -> {
+                        try {
+                            setter.invoke(instance, fn.apply(ctxt));
+                        } catch (Throwable e) {
+                            log.failedToSetField(field, e);
+                            ctxt.addProblem(e);
+                            return;
+                        }
+                    };
+                })
+                .toList();
         Consumer<StepContext> classFinish = injectionMapper.handleClassFinish(classStepBuilder, clazz, lookup);
         // now create the real class build step
         final Constructor<?> finalCtor = ctor;
@@ -314,20 +330,12 @@ public final class ChainBuilder {
                     return;
                 }
                 // inject fields
-                for (Map.Entry<Field, Function<StepContext, Object>> entry : fieldVals.entrySet()) {
-                    Field field = entry.getKey();
-                    Function<StepContext, Object> fn = entry.getValue();
-                    try {
-                        field.set(instance, fn.apply(stepContext));
-                    } catch (IllegalAccessException e) {
-                        log.failedToSetField(field, e);
-                        stepContext.addProblem(e);
-                        return;
-                    }
+                for (BiConsumer<Object, StepContext> injection : fieldInjections) {
+                    injection.accept(instance, stepContext);
                 }
                 classFinish.accept(stepContext);
                 // and we're set
-                stepContext.produce(clazz, new StepClassItem(instance));
+                stepContext.produce(clazz, new InstanceItem(instance));
             }
         });
         classStepBuilder.build();
@@ -341,7 +349,8 @@ public final class ChainBuilder {
                 method.setAccessible(true);
                 cons = new SwitchableConsumer<>(method.toString());
                 StepBuilder stepBuilder = addRawStep(cons);
-                stepBuilder.consumes(StepClassItem.class, clazz);
+                stepBuilder.id(new MethodStepId(method));
+                stepBuilder.consumes(InstanceItem.class, clazz);
                 Consumer<StepContext> methodHandler = injectionMapper.handleStepMethod(stepBuilder, method, lookup);
                 cnt = method.getParameterCount();
                 List<Function<StepContext, Object>> methodParamVals = new ArrayList<>(cnt);
@@ -351,8 +360,8 @@ public final class ChainBuilder {
                 BiConsumer<StepContext, Object> retHandler = injectionMapper.handleReturnValue(stepBuilder, method, lookup);
                 cons.setDelegate(new Consumer<StepContext>() {
                     public void accept(final StepContext stepContext) {
-                        StepClassItem item = stepContext.consume(StepClassItem.class, clazz);
-                        Object instance = item.getInstance();
+                        InstanceItem item = stepContext.consume(InstanceItem.class, clazz);
+                        Object instance = item.instance();
                         methodHandler.accept(stepContext);
                         final int cnt = methodParamVals.size();
                         final Object[] args = new Object[cnt];

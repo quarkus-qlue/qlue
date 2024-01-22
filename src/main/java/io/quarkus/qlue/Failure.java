@@ -1,15 +1,18 @@
 package io.quarkus.qlue;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
- *
+ * A failure result.
  */
 public class Failure extends Result {
     private final List<Throwable> problems;
 
-    Failure(final List<Throwable> problems) {
-        this.problems = problems;
+    Failure(final Instant start, final Instant end, final List<Throwable> problems, final Map<StepId, StepSummary> summaries) {
+        super(start, end, summaries);
+        this.problems = List.copyOf(problems);
     }
 
     public List<Throwable> getProblems() {

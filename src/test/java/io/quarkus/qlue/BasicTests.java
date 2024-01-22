@@ -2,6 +2,7 @@ package io.quarkus.qlue;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static org.assertj.core.api.Assertions.setMaxStackTraceElementsDisplayed;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -9,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.qlue.item.SimpleItem;
@@ -16,6 +18,10 @@ import io.quarkus.qlue.item.SimpleItem;
 /**
  */
 public class BasicTests {
+    @BeforeAll
+    public static void setup() {
+        setMaxStackTraceElementsDisplayed(Integer.MAX_VALUE);
+    }
 
     public static final class DummyItem extends SimpleItem {
     }
@@ -48,7 +54,7 @@ public class BasicTests {
         final ChainBuilder builder = Chain.builder();
         StepBuilder stepBuilder = builder.addRawStep(new Consumer<StepContext>() {
             public void accept(final StepContext context) {
-                throw new NoClassDefFoundError();
+                throw new NoClassDefFoundError("This is an intentional exception");
             }
         });
         stepBuilder.produces(DummyItem.class);
@@ -64,7 +70,7 @@ public class BasicTests {
         final ChainBuilder builder = Chain.builder();
         StepBuilder stepBuilder = builder.addRawStep(new Consumer<StepContext>() {
             public void accept(final StepContext context) {
-                throw new NoClassDefFoundError();
+                throw new NoClassDefFoundError("This is an intentional exception");
             }
         });
 
