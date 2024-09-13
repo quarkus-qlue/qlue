@@ -11,7 +11,7 @@
     <parent>
         <artifactId>smallrye-parent</artifactId>
         <groupId>io.smallrye</groupId>
-        <version>45</version>
+        <version>46</version>
     </parent>
 
     <name>Quarkus Qlue</name>
