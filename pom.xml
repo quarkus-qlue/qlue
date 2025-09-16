@@ -24,7 +24,7 @@
     </issueManagement>
 
     <properties>
-        <version.io.smallrye.common>2.13.8</version.io.smallrye.common>
+        <version.io.smallrye.common>2.13.9</version.io.smallrye.common>
     </properties>
 
     <build>
