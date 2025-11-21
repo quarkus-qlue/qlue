@@ -8,7 +8,7 @@ jobs:
     name: Build
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout
 
       - uses: actions/setup-java@v5
