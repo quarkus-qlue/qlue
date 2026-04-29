@@ -9,9 +9,9 @@
     <version>1.0.0-SNAPSHOT</version>
 
     <parent>
-        <artifactId>smallrye-parent</artifactId>
-        <groupId>io.smallrye</groupId>
-        <version>42</version>
+        <artifactId>jboss-parent</artifactId>
+        <groupId>org.jboss</groupId>
+        <version>53</version>
     </parent>
 
     <name>Quarkus Qlue</name>
@@ -25,7 +25,10 @@
 
     <properties>
         <version.io.smallrye.common>2.17.1</version.io.smallrye.common>
+        <version.org.jboss.logging>3.6.3.Final</version.org.jboss.logging>
+        <version.org.jboss.logging.processor>3.0.4.Final</version.org.jboss.logging.processor>
         <test.loglevel>INFO</test.loglevel>
+        <maven.compiler.release>17</maven.compiler.release>
     </properties>
 
     <build>
@@ -49,12 +52,21 @@
                 </configuration>
             </plugin>
             <plugin>
-                <!-- TODO: remove once we update parent to ≥ 43 -->
-                <groupId>net.revelc.code</groupId>
-                <artifactId>impsort-maven-plugin</artifactId>
-                <configuration>
-                    <compliance>17</compliance>
-                </configuration>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>default-compile</id>
+                        <configuration>
+                            <annotationProcessorPaths>
+                                <path>
+                                    <groupId>org.jboss.logging</groupId>
+                                    <artifactId>jboss-logging-processor</artifactId>
+                                    <version>${version.org.jboss.logging.processor}</version>
+                                </path>
+                            </annotationProcessorPaths>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
@@ -83,23 +95,23 @@
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging</artifactId>
+            <version>${version.org.jboss.logging}</version>
         </dependency>
         <dependency>
             <groupId>org.jboss.logging</groupId>
             <artifactId>jboss-logging-annotations</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-processor</artifactId>
+            <version>${version.org.jboss.logging.processor}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
+            <version>6.0.3</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
+            <version>3.27.7</version>
             <scope>test</scope>
         </dependency>
         <dependency>
