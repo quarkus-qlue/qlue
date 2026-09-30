@@ -24,7 +24,7 @@
     </issueManagement>
 
     <properties>
-        <version.io.quarkus.ide-config>3.15.1</version.io.quarkus.ide-config>
+        <version.io.quarkus.ide-config>3.40.0</version.io.quarkus.ide-config>
         <version.io.smallrye.common>2.21.1</version.io.smallrye.common>
         <version.net.revelc.code.formatter>2.24.1</version.net.revelc.code.formatter>
         <version.org.assertj>3.27.7</version.org.assertj>
