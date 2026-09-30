@@ -26,7 +26,7 @@
     <properties>
         <version.io.quarkus.ide-config>3.15.1</version.io.quarkus.ide-config>
         <version.io.smallrye.common>2.21.1</version.io.smallrye.common>
-        <version.net.revelc.code.formatter>2.24.1</version.net.revelc.code.formatter>
+        <version.net.revelc.code.formatter>2.29.0</version.net.revelc.code.formatter>
         <version.org.assertj>3.27.7</version.org.assertj>
         <version.org.jboss.logging>3.6.3.Final</version.org.jboss.logging>
         <version.org.jboss.logging.processor>3.0.4.Final</version.org.jboss.logging.processor>
