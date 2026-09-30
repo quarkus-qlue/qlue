@@ -11,7 +11,7 @@
     <parent>
         <artifactId>jboss-parent</artifactId>
         <groupId>org.jboss</groupId>
-        <version>53</version>
+        <version>54</version>
     </parent>
 
     <name>Quarkus Qlue</name>
@@ -24,7 +24,7 @@
     </issueManagement>
 
     <properties>
-        <version.io.smallrye.common>2.20.0</version.io.smallrye.common>
+        <version.io.smallrye.common>2.21.1</version.io.smallrye.common>
         <version.org.jboss.logging>3.6.3.Final</version.org.jboss.logging>
         <version.org.jboss.logging.processor>3.0.4.Final</version.org.jboss.logging.processor>
         <test.loglevel>INFO</test.loglevel>
