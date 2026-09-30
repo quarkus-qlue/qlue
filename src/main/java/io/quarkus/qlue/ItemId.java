@@ -43,7 +43,7 @@ public final class ItemId {
     }
 
     public boolean equals(ItemId obj) {
-        return this == obj || obj != null && itemType == obj.itemType && itemArg == obj.itemArg;
+        return this == obj || obj != null && itemType == obj.itemType && Objects.equals(itemArg, obj.itemArg);
     }
 
     @Override

@@ -134,10 +134,7 @@ public final class StepContext {
      *         {@code null}, or if the item does not allow multiplicity but this method is called more than one time
      */
     public <T extends Item> void produce(Class<T> type, T item) {
-        Assert.checkNotNullParam("type", type);
-        if (ClassItem.class.isAssignableFrom(type)) {
-            throw log.namedNeedsArgument(type);
-        }
+        checkSimpleType(type);
         doProduce(new ItemId(type), type.cast(item));
     }
 
@@ -170,13 +167,7 @@ public final class StepContext {
      * @throws ClassCastException if the cast failed
      */
     public <T extends SimpleItem> T consume(Class<T> type) {
-        Assert.checkNotNullParam("type", type);
-        if (ClassItem.class.isAssignableFrom(type)) {
-            throw log.namedNeedsArgument(type);
-        }
-        if (state != State.RUNNING) {
-            throw log.stepNotRunning();
-        }
+        checkSimpleTypeRunning(type);
         final ItemId id = new ItemId(type);
         if (id.isMulti()) {
             throw log.cannotMulti(id);
@@ -202,9 +193,7 @@ public final class StepContext {
     public <U, T extends SimpleClassItem<U>> T consume(Class<T> type, Class<? extends U> argument) {
         Assert.checkNotNullParam("type", type);
         Assert.checkNotNullParam("argument", argument);
-        if (state != State.RUNNING) {
-            throw log.stepNotRunning();
-        }
+        checkRunning();
         final ItemId id = new ItemId(type, argument);
         if (id.isMulti()) {
             throw log.cannotMulti(id);
@@ -228,13 +217,7 @@ public final class StepContext {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T extends MultiItem> List<T> consumeMulti(Class<T> type) {
-        Assert.checkNotNullParam("type", type);
-        if (ClassItem.class.isAssignableFrom(type)) {
-            throw log.namedNeedsArgument(type);
-        }
-        if (state != State.RUNNING) {
-            throw log.stepNotRunning();
-        }
+        checkSimpleTypeRunning(type);
         final ItemId id = new ItemId(type);
         if (!id.isMulti()) {
             // can happen if obj changes base class
@@ -263,9 +246,7 @@ public final class StepContext {
     public <U, T extends MultiClassItem<U>> List<T> consumeMulti(Class<T> type, Class<? extends U> argument) {
         Assert.checkNotNullParam("type", type);
         Assert.checkNotNullParam("argument", argument);
-        if (state != State.RUNNING) {
-            throw log.stepNotRunning();
-        }
+        checkRunning();
         final ItemId id = new ItemId(type, argument);
         if (!id.isMulti()) {
             // can happen if obj changes base class
@@ -322,10 +303,7 @@ public final class StepContext {
      *         not consume the named item
      */
     public boolean isAvailableToConsume(Class<? extends Item> type) {
-        Assert.checkNotNullParam("type", type);
-        if (ClassItem.class.isAssignableFrom(type)) {
-            throw log.namedNeedsArgument(type);
-        }
+        checkSimpleType(type);
         final ItemId id = new ItemId(type);
         return stepInfo.consumes().contains(id) && id.isMulti()
                 ? !execution.getMultis().getOrDefault(id, Collections.emptyList()).isEmpty()
@@ -359,10 +337,7 @@ public final class StepContext {
      *         not produce the named item
      */
     public boolean isConsumed(Class<? extends Item> type) {
-        Assert.checkNotNullParam("type", type);
-        if (ClassItem.class.isAssignableFrom(type)) {
-            throw log.namedNeedsArgument(type);
-        }
+        checkSimpleType(type);
         return execution.getBuildChain().getConsumed().contains(new ItemId(type));
     }
 
@@ -549,11 +524,27 @@ public final class StepContext {
 
     // -- //
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void doProduce(ItemId id, Item value) {
+    private void checkRunning() {
         if (state != State.RUNNING) {
             throw log.stepNotRunning();
         }
+    }
+
+    private void checkSimpleType(Class<?> type) {
+        Assert.checkNotNullParam("type", type);
+        if (ClassItem.class.isAssignableFrom(type)) {
+            throw log.namedNeedsArgument(type);
+        }
+    }
+
+    private void checkSimpleTypeRunning(Class<?> type) {
+        checkSimpleType(type);
+        checkRunning();
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private void doProduce(ItemId id, Item value) {
+        checkRunning();
         if (!stepInfo.produces().contains(id)) {
             throw log.undeclaredItem(id);
         }
