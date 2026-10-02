@@ -4,6 +4,10 @@ import static io.quarkus.qlue._private.Messages.log;
 import static java.lang.invoke.MethodHandles.Lookup;
 import static java.lang.invoke.MethodHandles.lookup;
 
+import io.quarkus.qlue.item.ClassItem;
+import io.quarkus.qlue.item.InstanceItem;
+import io.quarkus.qlue.item.Item;
+import io.smallrye.common.constraint.Assert;
 import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -20,11 +24,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Stream;
-
-import io.quarkus.qlue.item.ClassItem;
-import io.quarkus.qlue.item.InstanceItem;
-import io.quarkus.qlue.item.Item;
-import io.smallrye.common.constraint.Assert;
 
 /**
  * A chain builder.

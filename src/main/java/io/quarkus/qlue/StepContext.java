@@ -3,6 +3,13 @@ package io.quarkus.qlue;
 import static io.quarkus.qlue._private.Messages.log;
 import static java.lang.invoke.MethodHandles.lookup;
 
+import io.quarkus.qlue.item.ClassItem;
+import io.quarkus.qlue.item.Item;
+import io.quarkus.qlue.item.MultiClassItem;
+import io.quarkus.qlue.item.MultiItem;
+import io.quarkus.qlue.item.SimpleClassItem;
+import io.quarkus.qlue.item.SimpleItem;
+import io.smallrye.common.constraint.Assert;
 import java.lang.invoke.ConstantBootstraps;
 import java.lang.invoke.VarHandle;
 import java.time.Duration;
@@ -15,14 +22,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
-
-import io.quarkus.qlue.item.ClassItem;
-import io.quarkus.qlue.item.Item;
-import io.quarkus.qlue.item.MultiClassItem;
-import io.quarkus.qlue.item.MultiItem;
-import io.quarkus.qlue.item.SimpleClassItem;
-import io.quarkus.qlue.item.SimpleItem;
-import io.smallrye.common.constraint.Assert;
 
 /**
  * The context passed to a step's operation.

@@ -1,12 +1,11 @@
 package io.quarkus.qlue.annotation;
 
+import io.quarkus.qlue.item.Item;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import io.quarkus.qlue.item.Item;
 
 /**
  * Declare that this step comes after the given item is produced.

@@ -1,9 +1,8 @@
 package io.quarkus.qlue;
 
+import io.smallrye.common.constraint.Assert;
 import java.time.Duration;
 import java.time.Instant;
-
-import io.smallrye.common.constraint.Assert;
 
 /**
  * The summary of the execution of a single build step.

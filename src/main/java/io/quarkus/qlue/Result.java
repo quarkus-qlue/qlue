@@ -2,12 +2,11 @@ package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
 
+import io.smallrye.common.constraint.Assert;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
-
-import io.smallrye.common.constraint.Assert;
 
 /**
  * The result of the execution.

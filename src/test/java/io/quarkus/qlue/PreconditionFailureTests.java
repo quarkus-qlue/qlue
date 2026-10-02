@@ -3,14 +3,12 @@ package io.quarkus.qlue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.function.Consumer;
-
-import org.junit.jupiter.api.Test;
-
 import io.quarkus.qlue.item.ClassItem;
 import io.quarkus.qlue.item.Item;
 import io.quarkus.qlue.item.SimpleClassItem;
 import io.quarkus.qlue.item.SimpleItem;
+import java.util.function.Consumer;
+import org.junit.jupiter.api.Test;
 
 /**
  * Precondition failure and validation tests for verifying Qlue's fail-fast design.

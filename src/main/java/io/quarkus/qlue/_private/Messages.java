@@ -1,5 +1,8 @@
 package io.quarkus.qlue._private;
 
+import io.quarkus.qlue.ChainBuildException;
+import io.quarkus.qlue.ItemId;
+import io.quarkus.qlue.StepId;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -7,17 +10,12 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.List;
 import java.util.NoSuchElementException;
-
 import org.jboss.logging.BasicLogger;
 import org.jboss.logging.Logger;
 import org.jboss.logging.annotations.Cause;
 import org.jboss.logging.annotations.LogMessage;
 import org.jboss.logging.annotations.Message;
 import org.jboss.logging.annotations.MessageLogger;
-
-import io.quarkus.qlue.ChainBuildException;
-import io.quarkus.qlue.ItemId;
-import io.quarkus.qlue.StepId;
 
 @MessageLogger(projectCode = "QLUE", length = 4)
 public interface Messages extends BasicLogger {

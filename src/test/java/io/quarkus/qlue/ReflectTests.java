@@ -5,15 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Consumer;
-
-import org.junit.jupiter.api.Test;
-
 import io.quarkus.qlue.annotation.ForClass;
 import io.quarkus.qlue.annotation.Step;
 import io.quarkus.qlue.item.InstanceItem;
 import io.quarkus.qlue.item.SimpleItem;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Consumer;
+import org.junit.jupiter.api.Test;
 
 /**
  *

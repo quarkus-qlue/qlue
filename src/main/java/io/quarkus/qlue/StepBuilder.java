@@ -2,16 +2,15 @@ package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
 
+import io.quarkus.qlue.item.ClassItem;
+import io.quarkus.qlue.item.EmptyItem;
+import io.quarkus.qlue.item.Item;
+import io.smallrye.common.constraint.Assert;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
-
-import io.quarkus.qlue.item.ClassItem;
-import io.quarkus.qlue.item.EmptyItem;
-import io.quarkus.qlue.item.Item;
-import io.smallrye.common.constraint.Assert;
 
 /**
  * A builder for step instances within a chain. A step can consume and produce items. It may also register

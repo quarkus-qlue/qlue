@@ -2,6 +2,7 @@ package io.quarkus.qlue;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.quarkus.qlue.item.SimpleItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -11,10 +12,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
-
 import org.junit.jupiter.api.Test;
-
-import io.quarkus.qlue.item.SimpleItem;
 
 /**
  * Concurrent stress tests for verifying Qlue's state transitions, topological execution sequence,
