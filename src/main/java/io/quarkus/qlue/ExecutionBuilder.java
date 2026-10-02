@@ -2,6 +2,9 @@ package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
 
+import io.quarkus.qlue.item.ClassItem;
+import io.quarkus.qlue.item.Item;
+import io.smallrye.common.constraint.Assert;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -9,10 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
-
-import io.quarkus.qlue.item.ClassItem;
-import io.quarkus.qlue.item.Item;
-import io.smallrye.common.constraint.Assert;
 
 /**
  * A builder for an execution.

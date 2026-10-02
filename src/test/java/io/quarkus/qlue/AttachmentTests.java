@@ -6,11 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.function.Consumer;
-
-import org.junit.jupiter.api.Test;
-
 import io.quarkus.qlue.item.SimpleItem;
+import java.util.function.Consumer;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for verifying {@link AttachmentKey} and the state storage limits in {@link StepContext}.

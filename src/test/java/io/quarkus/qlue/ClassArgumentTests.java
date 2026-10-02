@@ -3,13 +3,11 @@ package io.quarkus.qlue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.List;
-import java.util.function.Consumer;
-
-import org.junit.jupiter.api.Test;
-
 import io.quarkus.qlue.item.MultiClassItem;
 import io.quarkus.qlue.item.SimpleClassItem;
+import java.util.List;
+import java.util.function.Consumer;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests for verifying {@link SimpleClassItem} and {@link MultiClassItem} behavior with class arguments.

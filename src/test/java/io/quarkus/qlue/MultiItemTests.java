@@ -3,14 +3,12 @@ package io.quarkus.qlue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.quarkus.qlue.item.MultiItem;
+import io.quarkus.qlue.item.SimpleItem;
 import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
-
 import org.junit.jupiter.api.Test;
-
-import io.quarkus.qlue.item.MultiItem;
-import io.quarkus.qlue.item.SimpleItem;
 
 /**
  * Tests for verifying {@link MultiItem} behavior, natural sorting, and custom comparator sorting.

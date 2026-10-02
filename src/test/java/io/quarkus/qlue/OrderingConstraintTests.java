@@ -2,14 +2,12 @@ package io.quarkus.qlue;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.quarkus.qlue.item.SimpleItem;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
-
 import org.junit.jupiter.api.Test;
-
-import io.quarkus.qlue.item.SimpleItem;
 
 /**
  * Tests for verifying {@code beforeConsume} and {@code afterProduce} ordering-only constraints.

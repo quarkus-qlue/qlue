@@ -2,13 +2,12 @@ package io.quarkus.qlue;
 
 import static io.quarkus.qlue._private.Messages.log;
 
-import java.util.NoSuchElementException;
-import java.util.Objects;
-
 import io.quarkus.qlue.item.Item;
 import io.quarkus.qlue.item.MultiClassItem;
 import io.quarkus.qlue.item.MultiItem;
 import io.smallrye.common.constraint.Assert;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * An identifier for a build item.

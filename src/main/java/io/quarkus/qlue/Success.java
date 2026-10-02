@@ -1,18 +1,17 @@
 package io.quarkus.qlue;
 
-import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
 import io.quarkus.qlue._private.Messages;
 import io.quarkus.qlue.item.Item;
 import io.quarkus.qlue.item.MultiClassItem;
 import io.quarkus.qlue.item.MultiItem;
 import io.quarkus.qlue.item.SimpleClassItem;
 import io.quarkus.qlue.item.SimpleItem;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * The final result of a successful operation.

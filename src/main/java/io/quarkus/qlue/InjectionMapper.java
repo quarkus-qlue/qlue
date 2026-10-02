@@ -6,22 +6,6 @@ import static io.quarkus.qlue.ReflectUtil.typeOfParameter;
 import static io.quarkus.qlue._private.Messages.log;
 import static java.lang.invoke.MethodHandles.Lookup;
 
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Executable;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
-import java.lang.reflect.UndeclaredThrowableException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.BiConsumer;
-import java.util.function.BooleanSupplier;
-import java.util.function.Consumer;
-import java.util.function.Function;
-
 import io.quarkus.qlue.annotation.AfterProduce;
 import io.quarkus.qlue.annotation.AlwaysProduce;
 import io.quarkus.qlue.annotation.BeforeConsume;
@@ -39,6 +23,21 @@ import io.quarkus.qlue.item.MultiClassItem;
 import io.quarkus.qlue.item.MultiItem;
 import io.quarkus.qlue.item.SimpleClassItem;
 import io.quarkus.qlue.item.SimpleItem;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.lang.reflect.UndeclaredThrowableException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BooleanSupplier;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * A mapper which provides injection behavior for a step class.

@@ -1,11 +1,10 @@
 package io.quarkus.qlue;
 
+import io.smallrye.common.constraint.Assert;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.Objects;
-
-import io.smallrye.common.constraint.Assert;
 
 /**
  * A step identifier which refers to a specific method on a class.

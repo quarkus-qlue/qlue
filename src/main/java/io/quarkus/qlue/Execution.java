@@ -4,6 +4,7 @@ import static io.quarkus.qlue._private.Messages.log;
 import static java.util.concurrent.locks.LockSupport.park;
 import static java.util.concurrent.locks.LockSupport.unpark;
 
+import io.quarkus.qlue.item.Item;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -13,8 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import io.quarkus.qlue.item.Item;
 
 /**
  */

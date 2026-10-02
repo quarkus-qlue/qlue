@@ -4,14 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import io.quarkus.qlue.annotation.Step;
+import io.quarkus.qlue.item.SimpleItem;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
-
 import org.junit.jupiter.api.Test;
-
-import io.quarkus.qlue.annotation.Step;
-import io.quarkus.qlue.item.SimpleItem;
 
 /**
  * Tests for verifying {@link Optional} dependency and injection behavior.
